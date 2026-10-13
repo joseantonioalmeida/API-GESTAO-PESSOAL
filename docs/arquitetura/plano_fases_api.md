@@ -3,8 +3,8 @@
 | Campo | Valor |
 | --- | --- |
 | Documento | `docs/arquitetura/plano_fases_api.md` |
-| Estado | PROPOSTO. Todas as decisões da F1 estão aprovadas: DEC-MV-01 a 05 e DEC-MV-25, esta com escopo limitado (2026-10-11). A Etapa B da F1 depende do commit de baseline (`indice.md` §5) |
-| Data | 2026-10-10. Atualizado em 2026-10-11 (nome da F8, escopo financeiro, gates da F1 e da F5) |
+| Estado | PROPOSTO. F1 **`APROVADO_COM_P3`** na reauditoria de 2026-10-11, aguardando integração pelo usuário (`indice.md` §5). Decisões da F1 aprovadas: DEC-MV-01 a 05, DEC-MV-25 (escopo limitado) e DEC-MV-26. Demais fases dependem das decisões pendentes |
+| Data | 2026-10-10. Atualizado em 2026-10-11 (nome da F8, escopo financeiro, gates da F1 e da F5) e em 2026-10-13 (estado da F1, P-DOC-07) |
 | Relacionados | ADR-0001, ADR-0002, `arquitetura_api_minhavida.md`, `plano_validacao_auditoria.md`, `matriz_requisitos_api.md` |
 
 > A numeração das fases (F0–F11) é independente da numeração das telas (1–11) e das tabelas (1–13).
@@ -49,7 +49,7 @@ Ordem de execução (sequencial, uma fase por vez): F1 → F2 → F3 → F4 → 
 | Fase | Nome | Decisões exigidas (aceitas) | Estado atual |
 | --- | --- | --- | --- |
 | F0 | Arquitetura e reconciliação | — | ENTREGUE PARA REVISÃO (documentos desta sessão) |
-| F1 | Fundação técnica | DEC-MV-01 a 05 e DEC-MV-25 (**aprovadas** em 2026-10-11) | `PRONTO_PARA_ETAPA_A`. Etapa B: exige o baseline (ACH-MV-ARQ-019) e “pode implementar” |
+| F1 | Fundação técnica | DEC-MV-01 a 05, DEC-MV-25 e DEC-MV-26 (**aprovadas** em 2026-10-11) | **`APROVADO_COM_P3`** (reauditoria de 2026-10-11). Aguardando integração por commit do usuário (G6). P3 em acompanhamento: ACH-MV-F1-005 a 007 |
 | F2 | Esquema de dados | DEC-MV-06, 07, 08 e `CLAUDE.md` atualizado | AGUARDANDO_DECISAO |
 | F3 | Identidade e acesso | DEC-MV-09 a 13 | AGUARDANDO_DECISAO |
 | F4 | Núcleo transacional | DEC-MV-14, 15 | AGUARDANDO_DECISAO |

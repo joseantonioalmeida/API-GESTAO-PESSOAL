@@ -313,6 +313,9 @@ app = criar_app()   # sem I/O: settings só são lidas no lifespan
 
   Identificar o usuário somente por `usuario_id`.
 - `hide_parameters=True` na engine (MANTER). Assim, parâmetros SQL não aparecem em mensagens de exceção.
+  - **Limite:** `hide_parameters` não cobre as mensagens do PostgreSQL. O `DETAIL` (por exemplo, `Key (email)=(…)`) e `Failing row contains (…)` podem conter valores de colunas, inclusive a linha inteira.
+  - Por isso, o handler de `DBAPIError` registra o 500 com `logger.error` sem `exc_info`, só com identificadores (`sqlstate`, classe, esquema, tabela, coluna e restrição) e a pilha sem mensagens. Os 503 registram só o código. O handler genérico mantém o traceback (CT-F1-09).
+  - Atualizado em 2026-10-11 (P-DOC-03, ACH-MV-F1-002), com aprovação do usuário.
 
 ---
 

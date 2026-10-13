@@ -421,7 +421,7 @@ Achados P0/P1: **nenhum**.
 
 Ordenadas pelo gate que bloqueiam. Recomendação = proposta do Opus. “Efeito se aprovada” indica o que passa a valer.
 
-**Estado em 2026-10-11:** DEC-MV-01 a 05 e DEC-MV-25 **APROVADAS** pelo usuário (registro e escopo no `indice.md` §4). DEC-MV-25 foi aprovada com escopo limitado. DEC-MV-06 a 24 continuam pendentes. DEC-MV-24 e 25 foram acrescentadas nesta data (REC-MV-029 e REC-MV-030).
+**Estado em 2026-10-11:** DEC-MV-01 a 05 e DEC-MV-25 **APROVADAS** pelo usuário (registro e escopo no `indice.md` §4). DEC-MV-25 foi aprovada com escopo limitado. DEC-MV-06 a 24 continuam pendentes. DEC-MV-24 e 25 foram acrescentadas nesta data (REC-MV-029 e REC-MV-030). DEC-MV-26 foi acrescentada pela auditoria da F1 (`docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md`, anexo B) e **APROVADA** na opção B, também em 2026-10-11 (`indice.md` §4, M4).
 
 | ID | Decisão | Recomendação | Efeito se aprovada | Documentos | Bloqueia |
 | --- | --- | --- | --- | --- | --- |
@@ -450,6 +450,7 @@ Ordenadas pelo gate que bloqueiam. Recomendação = proposta do Opus. “Efeito 
 | DEC-MV-23 | Manter PostgreSQL 15 (`postgres:15-alpine`) no desenvolvimento e nos testes | Aprovar | Sem mudança de imagem | §3.4 | Nenhuma |
 | DEC-MV-24 | Importações entre services: ADR-0001 D-02 passa a remeter à matriz da arquitetura §2.2 como regra exaustiva (suporte: `trava`, `idempotencia`, `paginacao`, `recorrencia`, `situacao_importancia`, `lembretes`, `autorizacao`; domínio: `pagamentos`, `painel` e `processamento_lembretes`, conforme a tabela) | Aprovar. §2.2 é o texto detalhado, e os algoritmos de §8.6.3, §8.7, §8.8 e §8.10 dependem dele | Fim do conflito entre dois textos aprovados (REC-MV-029). Sem aprovação, vale D-02 e os algoritmos citados precisam ser revistos | ADR-0001 D-02, arquitetura §2.2 | **F5** |
 | DEC-MV-25 | Convenção de nomes do `MetaData` (arquitetura §10.1, parte de D-09) aprovada antecipadamente para a F1. O restante de DEC-MV-07 continua pendente para a F2 | **APROVADA em 2026-10-11, com escopo limitado:** somente `CONVENCAO_NOMES` (padrões `pk`, `uq`, `ck`, `fk` e `ix` de §10.1, preservados exatamente) e `MetaData(naming_convention=CONVENCAO_NOMES)` em `Base` na F1. Não abrange o restante de DEC-MV-07/D-09, DEC-MV-06, tabelas, migrações ou seeds de domínio, `TimestampMixin`, `eager_defaults` nem a implementação da F1 | Prompt F1 passa a `PRONTO_PARA_ETAPA_A`. Alternativa: adiar a convenção para a F2, alterando §2.1 e o Prompt F1 | ADR-0001 D-09, arquitetura §10.1, Prompt F1 §6 e §7.1 | **F1** (G2) |
+| DEC-MV-26 | Reconciliar os comandos de formatação na raiz (`CLAUDE.md` §2, Prompt F1 §14, plano §5.1) com os documentos protegidos. Com `preview = true`, o Ruff formatava blocos Python em `.md` (ACH-MV-F1-001 e 004) | **APROVADA em 2026-10-11, opção B:** `exclude = ["*.md"]` em `[tool.ruff.format]`, com os comentários do anexo B da auditoria F1. Opções A (delimitar os comandos) e C (formatar os documentos) não escolhidas | `ruff format .` e `ruff format --check .` passam a ser seguros. Documentos fora do formatador; lint e cobertura de `.py` inalterados. Aplicada pelo Sonnet e verificada na reauditoria (`docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`) | `pyproject.toml`; auditoria F1, anexo B | **F1** (G5) |
 
 ---
 

@@ -3,11 +3,12 @@ name = "api"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.19.2",
     "fastapi[standard]>=0.141.1",
     "psycopg[binary]>=3.3.5",
+    "pydantic-settings>=2.15.0",
     "sqlalchemy[asyncio]>=2.0.52",
 ]
 
@@ -38,6 +39,9 @@ select = ["I", "F", "E", "W", "PL", "PT", "FAST"]
 
 [tool.ruff.format]
 preview = true
+# Markdown fica fora da formatação: os blocos Python dos documentos
+# normativos (docs/, PROMPTS/, CLAUDE.md) são protegidos (DEC-MV-26).
+exclude = ["*.md"]
 quote-style = "double"
 indent-style = "space"
 
@@ -89,6 +93,7 @@ reportIncompatibleVariableOverride = "none"
 addopts = "-s --color=yes --tb=short -m 'not performance'"
 markers = [
     "performance: teste de orçamento de tempo com volume grande; fora da suíte padrão",
+    "concorrencia: teste com transações concorrentes em conexões independentes",
 ]
 # Adiciona 'src' ao path do Python durante os testes. Isso permite que
 # os testes em `tests/` importem os módulos de `src/` sem erros.
@@ -117,6 +122,7 @@ dev = [
     "pytest-asyncio",
     "taskipy",
     "testcontainers[postgres]",
+    "httpx>=0.28.1",
 ]
 
 [tool.setuptools.packages.find]

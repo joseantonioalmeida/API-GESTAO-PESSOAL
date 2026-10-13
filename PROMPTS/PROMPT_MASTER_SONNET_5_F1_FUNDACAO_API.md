@@ -3,11 +3,13 @@
 | Campo | Valor |
 | --- | --- |
 | Fase | F1 — Fundação técnica (`docs/arquitetura/plano_fases_api.md`) |
-| Estado | **`PRONTO_PARA_ETAPA_A`** (2026-10-11). Somente a Etapa A está liberada |
-| Data | 2026-10-10. Atualizado em 2026-10-11 |
+| Estado | **Executado.** F1 **`APROVADO_COM_P3`** na reauditoria de 2026-10-11 (`docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`), aguardando integração pelo usuário (G6). Não reenviar ao Sonnet. Histórico: `PRONTO_PARA_ETAPA_A` em 2026-10-11 |
+| Data | 2026-10-10. Atualizado em 2026-10-11 e em 2026-10-13 (P-DOC-06 e 07, aprovadas pelo usuário) |
 | Autor | Claude Opus 5.5 (arquitetura) |
 | Destinatário | Claude Sonnet 5 (implementação) |
 
+> **Situação histórica (2026-10-11, antes da Etapa A).** Os itens 1 a 3 abaixo registram as condições de liberação naquela data. A situação atual está no campo Estado e em `docs/arquitetura/indice.md` §5.
+>
 > **1. Decisões necessárias à Etapa A: satisfeitas.** DEC-MV-01 a 05 e DEC-MV-25 foram aprovadas pelo usuário em 2026-10-11 (`docs/arquitetura/indice.md` §4). DEC-MV-25 tem escopo limitado: somente `CONVENCAO_NOMES` e sua aplicação ao `Base.metadata` (§6). No ADR-0001 estão aceitas D-01, D-02, D-03, D-04, D-08 e D-14, e D-09 apenas na convenção de nomes. O ADR não está aceito como um todo.
 >
 > **2. Baseline: pendente.** ACH-MV-ARQ-019 (P2) continua aberto. A Etapa A pode ser executada sem commit. A Etapa B exige o commit de baseline do usuário com o conteúdo de §1.1 e a revalidação de §1.2, salvo exceção aceita expressamente pelo usuário.
@@ -316,7 +318,8 @@ Implementar exatamente o contrato de arquitetura §3.2:
        - `{"40001", "40P01", "55P03"}` → 503 `CONFLITO_CONCORRENCIA` com `Retry-After: 1`;
        - `"57014"` → 503 `TEMPO_ESGOTADO`;
        - demais → 500 `ERRO_INTERNO`;
-       - log: `warning` para 503 e `exception` para 500, sem a URL e sem parâmetros.
+       - log: `warning` com o código para 503. Para 500, `logger.error` **sem `exc_info`**, com `sqlstate`, classe, esquema, tabela, coluna e restrição (`exc.orig.diag`), a pilha sem mensagens (`traceback.format_tb(exc.__traceback__)`) e `extra={"id_requisicao": ...}`. A mensagem do driver, o `DETAIL`, `str(exc)` e `repr(exc)` nunca entram no log;
+       - *atualizado em 2026-10-11 (P-DOC-01), com aprovação do usuário:* correção de ACH-MV-F1-002 (`docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md` e `PROMPTS/PROMPT_MASTER_SONNET_5_F1_CORRECOES_POS_AUDITORIA.md` §7.2). O texto anterior, “`exception` para 500, sem a URL e sem parâmetros”, gravava valores de colunas pelo `DETAIL` do PostgreSQL.
     5. `Exception` → 500 `ERRO_INTERNO` e `logger.exception("erro inesperado", extra={"id_requisicao": ...})`.
 
 ### 8.6. `routers/saude.py` e `schemas/saude.py`
@@ -460,7 +463,10 @@ dist/
   - `from testcontainers.community.postgres import PostgresContainer`;
   - `PostgresContainer(IMAGEM_POSTGRES, username="minhavida", password=secrets.token_urlsafe(16), dbname="minhavida_teste", driver="psycopg")` como context manager.
 - `url_banco_teste` (sync, `scope="session"`): `container.get_connection_url()`, seguido de `garantir_banco_descartavel(url, container)`.
-- `settings_teste` (função): `Settings(DATABASE_URL=url_banco_teste, AMBIENTE="teste", _env_file=None)`. Variações via `settings_teste.model_copy(update={...})`.
+- `settings_teste` (função): `SettingsTeste(DATABASE_URL=SecretStr(url_banco_teste), AMBIENTE="teste")`. Variações via `settings_teste.model_copy(update={...})`.
+  - `SettingsTeste(Settings)` fica em `tests/conftest.py`, com `model_config = SettingsConfigDict(env_file=None)` e `settings_customise_sources` retornando somente `(init_settings,)`.
+  - Efeito: só valores explícitos e padrões do contrato. Variáveis de ambiente, `.env` e segredos em arquivo não entram no resultado, e o `.env` **não é aberto**, porque a fonte dotenv é construída antes do hook.
+  - *Atualizado em 2026-10-11 (P-DOC-02), com aprovação do usuário:* correção de ACH-MV-F1-003 (prompt de correções §7.3), acrescida da emenda `env_file=None` instruída pelo usuário. A forma anterior, `Settings(..., _env_file=None)`, gerava `reportCallIssue` no Pyright e não isolava as variáveis de ambiente.
 - `criar_cliente` (async, função): fábrica que recebe um `FastAPI` e entra em `app.router.lifespan_context(app)` e em `httpx.AsyncClient(transport=httpx.ASGITransport(app=app, raise_app_exceptions=False), base_url="http://teste")`.
 
 ### 11.2. Apoio (`tests/apoio/banco.py`)
@@ -601,7 +607,7 @@ Resposta da Etapa A:
 | 7 | `uv run ruff format --check .` | Nenhum arquivo a reformatar |
 | 8 | `uv run pyright` | `0 errors` |
 | 9 | `uv run alembic heads` | Saída vazia |
-| 10 | `POSTGRES_USER=verificacao POSTGRES_PASSWORD=verificacao POSTGRES_DB=verificacao docker compose config --quiet` | Código 0 |
+| 10 | `POSTGRES_USER=verificacao POSTGRES_PASSWORD=verificacao POSTGRES_DB=verificacao docker compose --env-file /dev/null config --quiet` | Código 0. O `--env-file /dev/null` impede que o Docker Compose leia o `.env` real (ACH-MV-F1-007; P-DOC-06, aprovada em 2026-10-13) |
 | 11 | `grep -n "POSTGRES_PASSWORD" compose.yaml` | Somente a linha com `${POSTGRES_PASSWORD:?...}` |
 | 12 | `docker image inspect --format '{{index .RepoDigests 0}}' postgres:15-alpine` | Registrar o digest |
 

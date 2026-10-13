@@ -180,6 +180,10 @@ Formato: `CT-F<fase>-<nn>`. **c** = marcador `concorrencia`. Arquivos previstos 
 | CT-F1-18 | Alembic com `config.attributes["connection"]` | A partir de teste async com `await conn.run_sync(...)`, sem erro de loop aninhado |
 | CT-F1-19 | `env.py` | Não contém `api_gestao_pessoal.main` nem URL literal. `alembic.ini` sem `sqlalchemy.url` preenchido |
 | CT-F1-20 | Guarda de banco descartável | URL que não pertence ao container → `RuntimeError` antes de qualquer comando |
+| CT-F1-21 | Log do 500 de banco sem valores (`test_sessao_transacao.py::test_erro_banco_500_sem_valores_no_log`, REG-F1-01) | Violação UNIQUE diferida no `COMMIT` e violação NOT NULL no `INSERT`, com sentinelas sintéticas → 500 `ERRO_INTERNO`. A saída formatada com o `FORMATO_LOG` real e o `caplog.text` não contêm as sentinelas nem `DETAIL`, e a resposta também não. Controle positivo: o registro existe e contém `sqlstate`, o identificador esperado (`restricao=…` ou `coluna=…`) e `[id_requisicao]` |
+| CT-F1-22 | `settings_teste` hermética (`test_configuracao.py::test_settings_teste_ignora_ambiente_e_env`, REG-F1-02) | `.env` sintético em `tmp_path` e variáveis alteradas. Controle positivo: o `Settings` de produção absorve os valores. A fixture mantém os padrões. Asserção **estrutural**: `type(s).model_config.get("env_file") is None`. A ausência de abertura do `.env` não é provada pelo teste: é provada por **sonda comportamental** (audit hook) na auditoria |
+
+> CT-F1-21 e CT-F1-22 foram acrescentados em 2026-10-11 (P-DOC-04), com aprovação do usuário, a partir das regressões REG-F1-01 e REG-F1-02 (`docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md` e `docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`).
 
 ### F2 — Esquema de dados (`tests/esquema/`)
 

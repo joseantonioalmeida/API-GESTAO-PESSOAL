@@ -16,7 +16,8 @@
 5. `docs/arquitetura/plano_fases_api.md`: fases F0–F11, grafo, fichas e cobertura.
 6. `docs/arquitetura/plano_validacao_auditoria.md`: política de testes, catálogo de CTs, comandos, evidências, severidade, gates e protocolo de auditoria.
 7. `docs/arquitetura/matriz_requisitos_api.md`: rastreabilidade das telas 1–11, do contrato de dados e do escopo financeiro.
-8. `PROMPTS/PROMPT_MASTER_SONNET_5_F1_FUNDACAO_API.md`: Prompt Master da primeira fase (`PRONTO_PARA_ETAPA_A`).
+8. `PROMPTS/PROMPT_MASTER_SONNET_5_F1_FUNDACAO_API.md`: Prompt Master da primeira fase, executado. F1 `APROVADO_COM_P3`, aguardando integração.
+9. `docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md` e `docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`: auditoria da F1 (`BLOQUEADO`, histórico) e reauditoria das correções (`APROVADO_COM_P3`), com os achados ACH-MV-F1-001 a 007. O prompt das correções está em `PROMPTS/PROMPT_MASTER_SONNET_5_F1_CORRECOES_POS_AUDITORIA.md`.
 
 ## 2. Inventário de documentos
 
@@ -26,12 +27,15 @@
 | `PROMPTS/PROMPT_MASTER_SONNET_5_IMPLEMENTACAO_BANCO_DADOS.md` | Prompt anterior (banco) | **SUSPENSO**, confirmado pelo usuário em 2026-10-11. Não usar como autorização. Substituído pela F2 do plano. Arquivo não alterado |
 | `docs/adr/0001_arquitetura_api_minhavida.md` | ADR | **PARCIALMENTE ACEITO**: D-01, D-02, D-03, D-04, D-08 e D-14 aceitas; D-09 aceita somente na convenção de nomes (DEC-MV-25). Demais PROPOSTAS |
 | `docs/adr/0002_identificadores_uuid.md` | ADR | PROPOSTO (DEC-MV-06). Não alterado |
-| `docs/arquitetura/analise_projeto_minhavida.md` | Análise | PROPOSTO, com DEC-MV-01 a 05 e 25 aprovadas |
-| `docs/arquitetura/arquitetura_api_minhavida.md` | Arquitetura | **PARCIALMENTE ACEITO**: §2, §4.4, §5, §3 (itens da F1) e §10.1 somente na convenção de nomes. §1.1 registra instrução do usuário |
+| `docs/arquitetura/analise_projeto_minhavida.md` | Análise | PROPOSTO, com DEC-MV-01 a 05, 25 e 26 aprovadas |
+| `docs/arquitetura/arquitetura_api_minhavida.md` | Arquitetura | **PARCIALMENTE ACEITO**: §2, §4.4, §5, §3 (itens da F1) e §10.1 somente na convenção de nomes. §1.1 registra instrução do usuário. §3.4 ganhou o limite de `hide_parameters` e o contrato de log do 500 de banco (P-DOC-03) |
 | `docs/arquitetura/matriz_requisitos_api.md` | Rastreabilidade | PROPOSTO |
-| `docs/arquitetura/plano_fases_api.md` | Plano | PROPOSTO. Todas as decisões da F1 aprovadas |
-| `docs/arquitetura/plano_validacao_auditoria.md` | Validação e auditoria | **PARCIALMENTE ACEITO**: §2, §3, §5 e catálogo da F1 (DEC-MV-04) |
-| `PROMPTS/PROMPT_MASTER_SONNET_5_F1_FUNDACAO_API.md` | Prompt Master F1 | **`PRONTO_PARA_ETAPA_A`** (2026-10-11). Etapa B dependente do baseline e de “pode implementar” |
+| `docs/arquitetura/plano_fases_api.md` | Plano | PROPOSTO. F1 `APROVADO_COM_P3`, aguardando integração |
+| `docs/arquitetura/plano_validacao_auditoria.md` | Validação e auditoria | **PARCIALMENTE ACEITO**: §2, §3, §5 e catálogo da F1 (DEC-MV-04), com CT-F1-21 e 22 acrescentados (P-DOC-04) |
+| `PROMPTS/PROMPT_MASTER_SONNET_5_F1_FUNDACAO_API.md` | Prompt Master F1 | **Executado.** F1 `APROVADO_COM_P3` (reauditoria de 2026-10-11). §8.5, §11.1 e §14, passo 10, atualizados (P-DOC-01, 02 e 06). Histórico: `PRONTO_PARA_ETAPA_A` em 2026-10-11 |
+| `PROMPTS/PROMPT_MASTER_SONNET_5_F1_CORRECOES_POS_AUDITORIA.md` | Prompt de correções da F1 | **Executado** e verificado na reauditoria. Preservado sem alteração como evidência histórica (a emenda `env_file=None` está registrada no §4) |
+| `docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md` | Relatório de auditoria | Evidência histórica: F1 `BLOQUEADO` em 2026-10-11. Não alterar |
+| `docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md` | Relatório de reauditoria | Evidência histórica: F1 `APROVADO_COM_P3` em 2026-10-11. Não alterar |
 
 ## 3. Precedência normativa
 
@@ -54,10 +58,16 @@ Regras complementares:
 
 > Preenchido somente mediante aprovação explícita do usuário, com data e escopo. Uma aprovação não se estende a decisões ou documentos não citados.
 
-Referências das mensagens do usuário, ambas de 2026-10-11 na sessão `8f60e6c4-621a-44be-a17d-8b16d858086c`:
+Referências das mensagens do usuário na sessão `8f60e6c4-621a-44be-a17d-8b16d858086c`. M1 a M6 são de 2026-10-11, M7 e M8 de 2026-10-13:
 
 - **M1:** primeira mensagem do dia, com o texto “Aprovo as seguintes decisões, conforme descritas em `docs/arquitetura/analise_projeto_minhavida.md`, seção 9: DEC-MV-01. DEC-MV-02. DEC-MV-03. DEC-MV-04. DEC-MV-05.”
 - **M2:** segunda mensagem do dia, com o texto “Aprovo expressamente a DEC-MV-25.”
+- **M3:** mensagem que pediu a auditoria independente da F1 (“Prompt Master — Opus 5.5 — Auditoria independente da F1 e preparação condicionada da F2”). Ela declara, no seu §1.2, aprovações dadas antes ao Sonnet, em sessão que não está disponível aqui.
+- **M4:** mensagem com o texto “Aprovo a DEC-MV-26, opção B”.
+- **M5:** mensagem que pediu a resposta à Etapa A das correções. O Opus preparou a emenda `env_file=None`, e o usuário a encaminhou ao Sonnet como instrução própria (atestado em M6, §1.3).
+- **M6:** mensagem que pediu a reauditoria das correções (“Prompt Master — Opus 5.5 — Reauditoria independente das correções da F1”).
+- **M7:** mensagem com o texto “Aprovo a P-DOC-06 e a P-DOC-07, exatamente nos escopos da seção 9.1 de docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md.”
+- **M8:** mensagem com o texto “Autorizo atualizar a nota desatualizada do indice.md §5 e registrar no §4 as aprovações de P-DOC-06 e P-DOC-07 que já concedi.”
 
 Os itens de cada mensagem são citados entre parênteses.
 
@@ -75,26 +85,45 @@ Os itens de cada mensagem são citados entre parênteses.
 | 2026-10-11 | Nomenclatura da F8 | F8 passa a se chamar “Vínculo interno entre despesas e importâncias”, com o mesmo identificador. Não autoriza implementar a F8 nem aprova decisões pendentes | M1 (item 4) | Opus |
 | 2026-10-11 | Prompt anterior do banco | Permanece SUSPENSO | M1 (item 6) e M2 (item 2) | Opus |
 | 2026-10-11 | Baseline sem credenciais | Instrução do usuário: baseline verificável antes da implementação, sem credenciais no histórico. Orientação em `analise` §3.5 (REC-MV-032). **Não** é exceção ao ACH-MV-ARQ-019, que segue ABERTO | M2 (item 3) | Opus |
+| 2026-10-11 | Implementação da F1 | “Pode implementar” dado ao Sonnet após a Etapa A, com revalidação prévia do baseline | Declarado em M3 (§1.2). A mensagem original ao Sonnet não está disponível nesta sessão | Opus (registro em 2026-10-11, na reauditoria) |
+| 2026-10-11 | Imports relativos em `tests/` | Autorizados expressamente, preservando a estrutura e sem mudar Ruff, Pyright, `sys.path`, `PYTHONPATH` ou dependências | Declarado em M3 (§1.2) | Opus (registro na reauditoria) |
+| 2026-10-11 | **DEC-MV-26, opção B** | `exclude = ["*.md"]` em `[tool.ruff.format]` do `pyproject.toml`, com os comentários do anexo B de `docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md`. Não muda comandos nem a cobertura de `.py`. Não inclui `alembic/` nos gates (ACH-MV-F1-005 segue pendente). Alternativas A e C não escolhidas | M4 | Opus (registro na reauditoria; adiado para não alterar os hashes travados pelo prompt de correções) |
+| 2026-10-11 | Correções pós-auditoria da F1 | Implementação de `PROMPTS/PROMPT_MASTER_SONNET_5_F1_CORRECOES_POS_AUDITORIA.md` (ACH-MV-F1-001 a 003), inclusive o log de `DBAPIError` 500 (§7.2) e a fixture (§7.3), autorizada ao Sonnet após a Etapa A | Declarado em M6 (§1.2) | Opus |
+| 2026-10-11 | Emenda `env_file=None` | `SettingsTeste` com `model_config = SettingsConfigDict(env_file=None)` e asserção estrutural no REG-F1-02. É instrução do usuário ao Sonnet, com precedência sobre o prompt de correções §7.3 e §7.5. Não é desvio do implementador | M5 e M6 (§1.3) | Opus |
+| 2026-10-11 | Atualizações documentais P-DOC-01 a 05 | Prompt F1 §8.5 e §11.1; arquitetura §3.4; plano de validação, catálogo da F1 (CT-F1-21 e 22); este índice §4 e §5; `analise` §9. Não alcançam `CLAUDE.md`, ADRs, código ou configuração | M6 (§0, item 5, e §9) | Opus |
+| 2026-10-11 | **Fora destas aprovações** | DEC-MV-06 a 24; a liberação da F2; a decisão sobre `alembic/` nos gates (ACH-MV-F1-005); o commit da F1, que cabe ao usuário | M3, M4 e M6 | Opus |
+| 2026-10-13 | **P-DOC-06** | Conforme a reauditoria §9.1: Prompt F1 §14, passo 10, passa a usar `POSTGRES_USER=verificacao POSTGRES_PASSWORD=verificacao POSTGRES_DB=verificacao docker compose --env-file /dev/null config --quiet`, que também serve de modelo para os próximos prompts. Corrige no Prompt F1 o comando do ACH-MV-F1-007 | M7 | Opus |
+| 2026-10-13 | **P-DOC-07** | Conforme a reauditoria §9.1: estados descritivos em `indice.md` §1, §2, §6 e §7, no cabeçalho do Prompt F1 e em `plano_fases_api.md` (cabeçalho e §3, linha da F1). Prompt F1 executado; F1 `APROVADO_COM_P3`, aguardando integração; contagem de CTs (173 + 2) e próxima ação | M7 | Opus |
+| 2026-10-13 | Fechamento documental da F1 | Atualização da nota do §5 e este registro no §4. Não alcança código, testes, configuração, dependências, relatórios de auditoria, `CLAUDE.md` nem ADRs | M8 | Opus |
+| 2026-10-13 | **Fora destas aprovações** | DEC-MV-06, o restante da DEC-MV-07, DEC-MV-08 e a opção do ACH-MV-F1-005, a tratar separadamente; DEC-MV-09 a 24; qualquer mudança da F2; o commit da F1, que cabe ao usuário | M7 e M8 | Opus |
 
 ## 5. Estado dos gates
 
 | Gate | Estado | Observação |
 | --- | --- | --- |
 | G0 — Baseline e fontes | **Cumprido** | Fontes lidas e lacunas registradas (`analise` §2). Hashes conferidos novamente em 2026-10-11 |
-| G1 — Arquitetura da F1 | **Cumprido** (2026-10-11) | DEC-MV-01 a 05 e DEC-MV-25 aceitas |
+| G1 — Arquitetura da F1 | **Cumprido** (2026-10-11) | DEC-MV-01 a 05 e DEC-MV-25 aceitas. DEC-MV-26 aprovada depois, na auditoria (M4) |
 | G1 — demais fases | AGUARDANDO_DECISAO | DEC-MV-06 a 24, conforme `analise` §9 |
-| G2 — Prompt Master F1 | **Cumprido**: `PRONTO_PARA_ETAPA_A` | Coerente com as fontes aceitas. Sem “a definir” |
-| G3 — Etapa A da F1 | Não iniciado | Liberado para envio ao Sonnet |
-| Pré-condição da Etapa B da F1 | **ABERTO** | ACH-MV-ARQ-019 (P2): commit de baseline com o conteúdo de `analise` §3.5, verificado pela revalidação do Prompt F1 §1.2, ou exceção aceita expressamente pelo usuário. Nenhuma exceção foi registrada |
-| Autorização da Etapa B | Não concedida | Depende de “pode implementar”, dado pelo usuário após a Etapa A |
-| G4 a G6 | Não iniciados | — |
+| G2 — Prompt Master F1 | **Cumprido**: `PRONTO_PARA_ETAPA_A` (2026-10-11) | §8.5 e §11.1 atualizados depois da reauditoria (P-DOC-01 e 02) |
+| G3 — Etapa A da F1 | **Cumprido** (declarado pelo usuário em M3) | O relatório da Etapa A não está arquivado no repositório nem disponível nesta sessão |
+| Pré-condição da Etapa B da F1 (ACH-MV-ARQ-019) | **Critério substantivo atendido; encerramento formal pendente** | Commit `bd2b2e0` com exatamente os 22 arquivos de `analise` §3.5, verificado pelo Opus na auditoria e na reauditoria. Os arquivos da F1 têm `mtime` posterior ao commit (19:13:38). Falta anexar o bloco de revalidação do Sonnet (Prompt F1 §1.2, a–e), declarada pelo usuário em M3 |
+| Autorização da Etapa B | **Concedida** | F1 e correções (M3 e M6) |
+| G4 — Entrega da F1 | **Cumprido** | `ENTREGUE_PARA_AUDITORIA`, duas vezes: a F1 e depois as correções |
+| G5 — Auditoria independente da F1 | Histórico: **`BLOQUEADO`** (auditoria de 2026-10-11, ACH-MV-F1-001 a 003, P2). Atual: **`APROVADO_COM_P3`** (reauditoria de 2026-10-11) | `docs/auditorias/AUDITORIA_F1_FUNDACAO_API.md` e `docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`. P3 em acompanhamento: ACH-MV-F1-005, 006 e 007. O veredito vale só para o objeto do manifesto da reauditoria |
+| G6 — Integração da F1 | **Pendente (usuário)** | Commit local do objeto reauditado, com lista explícita de arquivos e sem `.env`. Uma mudança posterior invalida a aplicação automática do veredito |
 
-Pendências que bloqueiam algo:
+Pendências:
 
-| Pendência | Fonte | Impacto | Resolução (usuário) |
+| Pendência | Fonte | Impacto | Resolução |
 | --- | --- | --- | --- |
-| ACH-MV-ARQ-019 aberto (P2) | `analise` §3.1 e §3.5, REC-MV-031 e 032 | A Etapa B da F1 não começa. A Etapa A, somente leitura, pode ocorrer | Commit de baseline com a lista explícita de `analise` §3.5, sem o `compose.yaml` |
+| Integração da F1 (G6) | Reauditoria §10 | A F2 depende da F1 integrada | Commit do usuário |
+| ACH-MV-ARQ-019: encerramento formal | `analise` §3.1 e §3.5; reauditoria §4 | Lacuna documental; não afeta o veredito técnico da F1 | Anexar o bloco de revalidação do relatório da F1, ou decisão expressa do usuário |
+| ACH-MV-F1-005 (P3): `alembic/` fora do Ruff e do Pyright | Auditoria F1 §8 | Revisões da F2 ficariam fora dos gates | Decisão do usuário antes do Prompt F2 |
+| ACH-MV-F1-007 (P3): `docker compose config` sem `--env-file /dev/null` lê o `.env` real | Reauditoria §4 | Leitura indireta do `.env` por ferramenta, sem exposição | Aprovar a correção dos comandos normativos (P-DOC-06, reauditoria §9) |
+| Gates da F2 | `plano_fases_api.md` (F2) | Prompt F2 não liberado | F1 integrada; DEC-MV-06, DEC-MV-07 (restante), DEC-MV-08; `CLAUDE.md` e modelo físico reconciliados; decisão do ACH-MV-F1-005 |
 | DEC-MV-24 pendente | REC-MV-029, ACH-MV-ARQ-021 | Não afeta F1 a F4. Bloqueia a F5 | Decidir antes do Prompt Master da F5 |
+
+> **Atualização de 2026-10-13 (M7 e M8).** A P-DOC-07 atualizou §1, §2, §6 e §7 deste índice, o cabeçalho do Prompt F1 e o `plano_fases_api.md`, que agora estão coerentes com esta §5. A P-DOC-06 corrigiu o comando do Compose no Prompt F1 §14, passo 10. Assim, a resolução do ACH-MV-F1-007 indicada na tabela de pendências já foi aplicada ao Prompt F1. O achado segue P3 em acompanhamento até os próximos prompts adotarem o mesmo comando. Histórico: em 2026-10-11, após a reauditoria, §1, §2, §6 e §7 ficaram desatualizadas por estarem fora do escopo de M6, e esta §5 era a fonte dos estados vigentes.
 
 ## 6. Autoverificação dos critérios de aceite da sessão (F0)
 
@@ -120,6 +149,7 @@ Pendências que bloqueiam algo:
 Verificação documental (não é teste de implementação), refeita em 2026-10-11 após a aprovação de DEC-MV-25:
 
 - Todos os IDs CT, DEC, REC, ACH e ESC-FIN citados existem no documento de origem (173 CTs, 25 DECs, 32 RECs, 25 ACHs e 5 ESC-FIN).
+- **Contagem atualizada em 2026-10-13 (P-DOC-07):** 175 CTs (CT-F1-21 e 22 acrescentados pela P-DOC-04) e 26 DECs (DEC-MV-26). RECs (32), ACH-MV-ARQ (25) e ESC-FIN (5) não mudaram. Os 263 IDs desses tipos citados em `docs/` e nos dois Prompts da F1 existem na origem. Os achados ACH-MV-F1-001 a 007 estão nos relatórios de `docs/auditorias/`.
 - Todas as referências `§` da arquitetura existem. As referências `§` entre documentos (análise, índice, planos, ADRs e Prompt F1) foram conferidas contra os títulos de seção.
 - Cercas de código balanceadas em todos os documentos.
 - Nenhuma credencial do `compose.yaml` reproduzida nos documentos.
@@ -130,9 +160,16 @@ Verificação documental (não é teste de implementação), refeita em 2026-10-
 
 ## 7. Próxima ação do usuário
 
-1. Revisar a orientação de baseline em `analise` §3.5 e criar o commit com a **lista explícita** de 22 arquivos, sem o `compose.yaml`. Não usar `git add -A` nem `git add .`. Recomendado antes de enviar o prompt. Também é permitido depois da Etapa A: nesse caso, o Sonnet revalida o baseline no início da Etapa B (Prompt F1 §1.2).
-2. Enviar `PROMPTS/PROMPT_MASTER_SONNET_5_F1_FUNDACAO_API.md` ao Sonnet. Ele executa **somente a Etapa A** e termina com “Aguardo ‘pode implementar’ para a F1.”
-3. Revisar o relatório da Etapa A. Responder “pode implementar” somente com o commit de baseline feito.
-4. Depois da F1, preencher o `.env` conforme o Prompt F1 §9.3.
-5. Antes da F5: decidir DEC-MV-24. Antes da F2: DEC-MV-06 a 08 e a atualização do `CLAUDE.md`.
+Atualizado em 2026-10-13 (P-DOC-07). Os passos da F0 (commit de baseline, Etapa A, “pode implementar”) foram cumpridos.
+
+1. **Integrar a F1 (G6):** commit local do objeto reauditado, com **lista explícita** de arquivos, sem `.env`, `.venv/` ou caches. Não usar `git add -A` nem `git add .`. Qualquer mudança nos arquivos aprovados antes do commit invalida a aplicação automática do veredito.
+2. Preencher o `.env` conforme o Prompt F1 §9.3 (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` e um `DATABASE_URL` válido), se ainda não o fez.
+3. Antes do Prompt F2, decidir:
+   - DEC-MV-06 (ADR-0002);
+   - o restante da DEC-MV-07;
+   - DEC-MV-08;
+   - a inclusão ou não de `alembic/` nos gates (ACH-MV-F1-005);
+   - a atualização do `CLAUDE.md` (`analise` §10).
+4. Opcional: encerrar formalmente o ACH-MV-ARQ-019, anexando o bloco de revalidação do relatório da F1 ou decidindo expressamente.
+5. Antes da F5: decidir DEC-MV-24.
 6. Opcional: restaurar as linhas truncadas do `CLAUDE.md` (ACH-MV-ARQ-012).
