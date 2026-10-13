@@ -3,8 +3,8 @@
 | Campo | Valor |
 | --- | --- |
 | Documento | `docs/arquitetura/arquitetura_api_minhavida.md` (fonte canônica dos contratos) |
-| Estado | **PARCIALMENTE ACEITO** em 2026-10-11: §2 (DEC-MV-01), §4.4 (DEC-MV-03), §5 (DEC-MV-02), §3 nos itens da F1 (detalhe de D-03) e, em §10.1, somente `CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)` (DEC-MV-25). §1.1 registra instrução do usuário. As demais seções seguem PROPOSTAS, conforme `analise_projeto_minhavida.md` §9 e `indice.md` §4 |
-| Data | 2026-10-09. Atualizado em 2026-10-11 (§1.1, notas em §2.2, §8.7 e §10.1) |
+| Estado | **PARCIALMENTE ACEITO** em 2026-10-11: §2 (DEC-MV-01), §4.4 (DEC-MV-03), §5 (DEC-MV-02), §3 nos itens da F1 (detalhe de D-03) e, em §10.1, somente `CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)` (DEC-MV-25). Em 2026-10-13: §10 integral (DEC-MV-07, com ADR-0002 por DEC-MV-06 e os CHECKs de DEC-MV-08). §1.1 registra instrução do usuário. As demais seções seguem PROPOSTAS, conforme `analise_projeto_minhavida.md` §9 e `indice.md` §4 |
+| Data | 2026-10-09. Atualizado em 2026-10-11 (§1.1, notas em §2.2, §8.7 e §10.1) e em 2026-10-13 (§10: aprovação, §10.3.1, DEC-MV-08 e §10.5; depois da auditoria da F2, seeds de §10.5 conforme a emenda F2-D1) |
 | Decisões | ADR-0001 (D-01 a D-16) e ADR-0002 (UUID) |
 
 > Convenção: caminhos marcados **PLANEJADO** ainda não existem. **EXISTENTE** indica arquivo presente no baseline (`analise_projeto_minhavida.md` §3.2). Pseudocódigo e exemplos deste documento **não** são código implementado nem testado.
@@ -1600,7 +1600,7 @@ class CriadoAtualizadoMixin:                            # F2 — somente nas 8 t
 - Todos os nomes de constraints e índices têm no máximo 63 caracteres (CT-F2-10).
 - **Sem `relationship()` na v1** (ADR-0001 D-04, item 7).
 
-> **Aprovação parcial (DEC-MV-25, 2026-10-11):** somente `CONVENCAO_NOMES`, com os cinco padrões acima preservados exatamente, e `metadata = MetaData(naming_convention=CONVENCAO_NOMES)` em `Base`, na F1. `__mapper_args__ = {"eager_defaults": True}`, `CriadoAtualizadoMixin`, o limite de 63 caracteres e o restante desta seção são da F2 e dependem de DEC-MV-07.
+> **Aprovação:** `CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)` em 2026-10-11 (DEC-MV-25, implementados na F1). `__mapper_args__ = {"eager_defaults": True}`, `CriadoAtualizadoMixin` (que substitui o `TimestampMixin`), o limite de 63 caracteres e o restante desta seção em 2026-10-13 (DEC-MV-07), para implementação na F2.
 
 ### 10.2. Enumerações (`models/enums.py`, `StrEnum` com valor = nome)
 
@@ -1634,7 +1634,20 @@ Mapeamento:
 | `requisicao_idempotente.situacao` | `'EM_PROCESSAMENTO'` |
 | Timestamps de criação e atualização | `now()` |
 
-Nenhum outro padrão é inventado: fuso, periodicidade, categoria e horários não têm padrão. O ORM espelha os mesmos padrões em `default=` quando útil.
+Nenhum outro padrão é inventado: fuso, periodicidade, categoria e horários não têm padrão. O ORM **não** repete esses padrões em `default=`: o banco aplica o padrão e o valor volta por `RETURNING` (`eager_defaults`), sem duas fontes. A única geração no lado da aplicação é o `id` (`default=uuid.uuid7`, ADR-0002). *Precisado em 2026-10-13 (REC-MV-033): o texto anterior dizia “quando útil”, sem critério.*
+
+#### 10.3.1. Comportamento dos timestamps
+
+| Coluna | Onde a regra vive | INSERT | UPDATE emitido pelo SQLAlchemy (ORM `flush` ou Core `update()`) | UPDATE em SQL textual ou fora da aplicação |
+| --- | --- | --- | --- | --- |
+| `criado_em`, `criada_em` | `server_default=func.now()`: vira `DEFAULT now()` no DDL, ou seja, regra **do banco** | O banco preenche sempre que a coluna é omitida, inclusive em SQL textual | Não muda | Não muda |
+| `atualizado_em` | `server_default=func.now()` (banco) **e** `onupdate=func.now()` (SQLAlchemy; **não existe no banco**) | O banco preenche com o mesmo instante de `criado_em` | O SQLAlchemy acrescenta `atualizado_em=now()` ao `SET`, salvo quando o valor é informado explicitamente | **Não muda**: não há trigger |
+
+- `now()` no PostgreSQL é `transaction_timestamp()`, o início da transação. Linhas inseridas ou atualizadas na mesma transação recebem o mesmo instante. Inserir e atualizar na mesma transação deixa `atualizado_em == criado_em`. O relógio é o do banco (RSK-MV-08).
+- O `onupdate` só age quando o SQLAlchemy emite um UPDATE. No ORM, isso ocorre apenas se algum atributo mapeado mudou; um `flush` sem mudança não altera `atualizado_em`. No Core, `update(tabela)` sem `atualizado_em` no `SET` também recebe `now()`.
+- `eager_defaults=True`, declarado em `Base.__mapper_args__` e herdado pelos modelos, faz o ORM buscar os valores gerados no servidor por `RETURNING`, na mesma instrução do INSERT ou do UPDATE. Sem isso, os atributos ficariam expirados, e o primeiro acesso exigiria nova consulta, que na `AsyncSession` falha com `MissingGreenlet` (I/O implícito).
+- `server_onupdate` não é usado. Atualizações por SQL textual não são permitidas nos services (D-09). Se um teste ou script usar SQL textual, precisa definir `atualizado_em = now()` explicitamente.
+- Prova na F2: CT-F2-19.
 
 ### 10.4. Catálogo de constraints e índices (F2)
 
@@ -1651,6 +1664,7 @@ Todas as FKs usam `ondelete="RESTRICT"`, explícito. As FKs compostas substituem
 |  | `ck_serie_atividade_numero_referencia` | `numero_referencia >= 1` |
 |  | `ck_serie_atividade_numero_final` | `numero_final IS NULL OR numero_final >= 0` |
 |  | `ck_serie_atividade_data_final` | `data_final_repeticao IS NULL OR data_final_repeticao >= data_referencia` |
+|  | `ck_serie_atividade_nome_padrao_tamanho` | `char_length(nome_padrao) BETWEEN 3 AND 100` (DEC-MV-08) |
 | `atividade` | `uq_atividade_serie_id_numero_ocorrencia` | `UNIQUE(serie_id, numero_ocorrencia)` (sem `NULLS NOT DISTINCT`) |
 |  | `ck_atividade_nome_tamanho` | `char_length(nome) BETWEEN 3 AND 100` |
 |  | `ck_atividade_horarios` | `horario_final > horario_inicial` |
@@ -1661,15 +1675,18 @@ Todas as FKs usam `ondelete="RESTRICT"`, explícito. As FKs compostas substituem
 |  | `ck_serie_importancia_valor_previsto` | `(possui_despesa_padrao = false AND valor_previsto_padrao IS NULL) OR (possui_despesa_padrao = true AND valor_previsto_padrao IS NOT NULL AND valor_previsto_padrao > 0)` |
 |  | `ck_serie_importancia_lembrete_par` | `(lembrete_antecedencia_dias IS NULL) = (lembrete_horario IS NULL)` |
 |  | `ck_serie_importancia_lembrete_antecedencia` | `lembrete_antecedencia_dias IS NULL OR lembrete_antecedencia_dias IN (0, 1, 3, 7)` |
+|  | `ck_serie_importancia_nome_padrao_tamanho` | `char_length(nome_padrao) BETWEEN 3 AND 100` (DEC-MV-08) |
 | `importancia` | `uq_importancia_id_usuario_id` | `UNIQUE(id, usuario_id)` |
 |  | `uq_importancia_serie_id_numero_ocorrencia` | `UNIQUE(serie_id, numero_ocorrencia)` |
 |  | `ck_importancia_serie_numero` | igual ao de `atividade` |
 |  | `ck_importancia_valor_previsto` | `(possui_despesa = false AND valor_previsto IS NULL) OR (possui_despesa = true AND valor_previsto IS NOT NULL AND valor_previsto > 0)` |
 |  | `ck_importancia_conclusao_manual` | `possui_despesa = false OR concluida_manualmente_em IS NULL` |
+|  | `ck_importancia_nome_tamanho` | `char_length(nome) BETWEEN 3 AND 100` (DEC-MV-08) |
 |  | `fk_importancia_serie_id_serie_importancia` | `(serie_id, usuario_id) → serie_importancia(id, usuario_id)` |
 | `categoria_financeira` | `uq_categoria_financeira_tipo_nome` | `UNIQUE(tipo, nome)` |
 |  | `uq_categoria_financeira_id_tipo` | `UNIQUE(id, tipo)` |
 | `movimentacao_financeira` | `uq_movimentacao_financeira_importancia_id` | `UNIQUE(importancia_id)` |
+|  | `ck_movimentacao_financeira_nome_tamanho` | `char_length(nome) BETWEEN 3 AND 100` (DEC-MV-08) |
 |  | `ck_movimentacao_financeira_valor_positivo` | `valor > 0` |
 |  | `ck_movimentacao_financeira_vinculo_par` | `(importancia_id IS NULL) = (importancia_vinculada_em IS NULL)` |
 |  | `ck_movimentacao_financeira_vinculo_despesa` | `importancia_id IS NULL OR tipo = 'DESPESA'` |
@@ -1689,7 +1706,8 @@ Todas as FKs usam `ondelete="RESTRICT"`, explícito. As FKs compostas substituem
 Observações:
 
 - As igualdades `(x IS NULL) = (y IS NULL)` são booleanas e nunca resultam em NULL, então cumprem a regra de “ambos nulos ou ambos preenchidos”.
-- Se DEC-MV-08 for aprovada, entram CHECKs `char_length(<nome>) BETWEEN 3 AND 100` em `importancia.nome`, `movimentacao_financeira.nome` e `serie_*.nome_padrao`.
+- DEC-MV-08 foi aprovada em 2026-10-13: os quatro CHECKs `*_nome_tamanho` e `*_nome_padrao_tamanho` marcados acima. Um nome com mais de 100 caracteres é barrado antes pelo `VARCHAR(100)` (SQLSTATE `22001`). O CHECK cobre o limite inferior e a string vazia.
+- Além das linhas desta tabela, há as 13 PKs `pk_<tabela>`, as 13 FKs simples nomeadas pela convenção (`fk_<tabela>_usuario_id_usuario` e `fk_<tabela>_categoria_id_<categoria>`) e os 9 CHECKs de enumeração `ck_<tabela>_<coluna>` (§10.2). Total: 13 PK, 17 UNIQUE, 19 FK, 36 CHECK e 8 índices, ou 93 nomes, o maior com 60 caracteres. Conferido em 2026-10-13 por compilação offline do DDL. A lista literal está no Prompt Master da F2.
 
 Índices iniciais, com nomes explícitos e a ordem de colunas do contrato:
 
@@ -1721,6 +1739,11 @@ Nenhum índice adicional na F2. Novos índices só com consulta e evidência (`E
   - se `config.attributes["connection"]` estiver presente, usa essa conexão síncrona diretamente, sem `asyncio.run`;
   - `fileConfig` só quando `config.attributes.get("configurar_logging", True)`.
 - Revisões: `def upgrade() -> None` e `def downgrade() -> None`. O resultado de `--autogenerate` é revisto manualmente (CHECKs, FKs compostas, nomes e padrões). Os seeds usam `sa.table(...)` local e `postgresql.insert(...).on_conflict_do_nothing(index_elements=[...])`, sem importar modelos vivos.
+- Revisão inicial (F2): ID `0001`, mensagem `esquema inicial`, arquivo `alembic/versions/<AAAAMMDD>_0001_esquema_inicial.py`.
+  - O autogenerate roda **somente** contra PostgreSQL descartável (Testcontainers), nunca contra o banco de desenvolvimento.
+  - Nomes de constraints e índices com `op.f()`. Os CHECKs de enumeração recebem `name=<coluna>` e são nomeados pela convenção, que o Alembic herda do `target_metadata` passado pelo `env.py` nos modos online e offline.
+  - Seeds: função de módulo `instrucoes_categorias() -> list[Insert]`, que monta os INSERTs idempotentes (`sa.table` local, `uuid.uuid7()`, `on_conflict_do_nothing` pela chave natural) sem acessar o banco; `upgrade()` os executa no fim com `op.execute`, na transação da migração e também no modo offline. Reexecutável sem duplicar nem trocar IDs (CT-F2-07). Emenda F2-D1.
+- Qualidade: `alembic/` passa pelo Ruff e pelo Pyright, com a exceção `PLC0415` restrita a `alembic/env.py`, cujo import local de `settings` é exigido pelo contrato (ACH-MV-F1-005, opção A, aprovada em 2026-10-13).
 - Deploy:
   - `alembic upgrade head` em passo próprio, antes de subir a nova versão da aplicação, após backup;
   - nunca no startup da API;

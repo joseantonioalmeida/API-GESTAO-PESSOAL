@@ -765,9 +765,9 @@ TABELAS DO BANCO DE DADOS — PROPOSTA PARA MODELAGEM COM SQLALCHEMY
 
 Este modelo considera os cadastros, as repetições, os pagamentos, os lembretes e a recuperação de senha definidos para o aplicativo. A numeração abaixo corresponde às tabelas, independentemente da numeração das telas.
 
-Os nomes de tabelas e colunas serão escritos em `snake_case`, sem espaços e sem acentos. “Obrigatório” significa `NOT NULL`; “opcional” significa que a coluna aceita `NULL`. Todos os campos `id` serão inteiros, chaves primárias e gerados automaticamente pelo banco. As chaves estrangeiras não terão auto incremento.
+Os nomes de tabelas e colunas serão escritos em `snake_case`, sem espaços e sem acentos. “Obrigatório” significa `NOT NULL`; “opcional” significa que a coluna aceita `NULL`. Todos os campos `id` serão UUID (tipo `uuid` do PostgreSQL), chaves primárias, versão 7, gerados pela aplicação com `uuid.uuid7()` (ver docs/adr/0002_identificadores_uuid.md). As chaves estrangeiras que referenciam um `id` também serão UUID.
 
-O banco de dados ainda não foi informado. Por isso, esta é uma especificação lógica com tipos e restrições a mapear no SQLAlchemy; a migração deverá adaptar auto incremento, datas com fuso e particularidades de índices ao SGBD escolhido.
+SGBD: PostgreSQL (decisão do usuário). Esta é uma especificação lógica com tipos e restrições mapeados no SQLAlchemy; o modelo físico (convenções, nomes e migração) está em docs/arquitetura/arquitetura_api_minhavida.md §10.
 
 
 DECISÕES DA MODELAGEM:
@@ -780,7 +780,7 @@ DECISÕES DA MODELAGEM:
 
 1 - USUARIO — `usuario`
 
-- id (chave primária, auto incremento, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
 - nome_completo (VARCHAR(150), obrigatório).
 - email (VARCHAR(254), obrigatório, único).
 - senha_hash (VARCHAR(255), obrigatório).
@@ -795,8 +795,8 @@ Não criar as colunas `senha` em texto puro nem `confirmar_senha`. O hash já co
 
 2 - RECUPERACAO_SENHA — `recuperacao_senha`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório, único).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório, único).
 - codigo_hash (VARCHAR(255), obrigatório; representação protegida do código enviado).
 - expira_em (DATETIME em UTC, obrigatório).
 - tentativas (INT, obrigatório, padrão 0).
@@ -816,7 +816,7 @@ Proposta operacional: validade total de dez minutos e até cinco tentativas de c
 
 3 - CATEGORIA_ATIVIDADE — `categoria_atividade`
 
-- id (chave primária, auto incremento, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
 - nome (VARCHAR(50), obrigatório, único).
 - ativa (BOOLEAN, obrigatório, padrão verdadeiro).
 
@@ -826,9 +826,9 @@ Uma categoria desativada continuará disponível no histórico dos registros exi
 
 4 - SERIE_ATIVIDADE — `serie_atividade`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- categoria_id (chave estrangeira → categoria_atividade.id, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- categoria_id (chave estrangeira → categoria_atividade.id, UUID, obrigatório).
 - nome_padrao (VARCHAR(100), obrigatório).
 - descricao_padrao (VARCHAR(200), opcional).
 - prioridade_padrao (VARCHAR(5), obrigatório, padrão BAIXA; valores: BAIXA, MEDIA ou ALTA).
@@ -844,14 +844,14 @@ Uma categoria desativada continuará disponível no histórico dos registros exi
 
 Esta tabela guardará o padrão para gerar tarefas recorrentes. A opção NENHUMA permitirá encerrar uma repetição preservando sua origem: nesse caso, a regra vigente produzirá somente a ocorrência de referência. Para uma atividade inicialmente avulsa, utilizar apenas a tabela `atividade`.
 
-Restrições: horário final maior que inicial; `numero_referencia >= 1`; `numero_final >= 0`, quando informado; data final da repetição igual ou posterior à referência, quando informada. O limite por número será usado principalmente para interromper uma série a partir de uma ocorrência, sem depender de datas que possam ter sido editadas individualmente.
+Restrições: nome padrão com 3 a 100 caracteres; horário final maior que inicial; `numero_referencia >= 1`; `numero_final >= 0`, quando informado; data final da repetição igual ou posterior à referência, quando informada. O limite por número será usado principalmente para interromper uma série a partir de uma ocorrência, sem depender de datas que possam ter sido editadas individualmente.
 
 5 - ATIVIDADE — `atividade`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- categoria_id (chave estrangeira → categoria_atividade.id, INT, obrigatório).
-- serie_id (chave estrangeira → serie_atividade.id, INT, opcional).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- categoria_id (chave estrangeira → categoria_atividade.id, UUID, obrigatório).
+- serie_id (chave estrangeira → serie_atividade.id, UUID, opcional).
 - numero_ocorrencia (INT, opcional; posição estável dentro da série).
 - nome (VARCHAR(100), obrigatório).
 - descricao (VARCHAR(200), opcional).
@@ -872,7 +872,7 @@ Situação calculada para registros não excluídos: `concluida_em` nulo signifi
 
 6 - CATEGORIA_IMPORTANCIA — `categoria_importancia`
 
-- id (chave primária, auto incremento, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
 - nome (VARCHAR(50), obrigatório, único).
 - ativa (BOOLEAN, obrigatório, padrão verdadeiro).
 
@@ -882,9 +882,9 @@ Manter separada das categorias financeiras: a categoria de um compromisso não n
 
 7 - SERIE_IMPORTANCIA — `serie_importancia`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- categoria_id (chave estrangeira → categoria_importancia.id, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- categoria_id (chave estrangeira → categoria_importancia.id, UUID, obrigatório).
 - nome_padrao (VARCHAR(100), obrigatório).
 - descricao_padrao (VARCHAR(200), opcional).
 - periodicidade (VARCHAR(10), obrigatório; valores: NENHUMA, DIARIA, SEMANAL, MENSAL ou ANUAL).
@@ -902,14 +902,14 @@ Manter separada das categorias financeiras: a categoria de um compromisso não n
 
 Esta tabela guardará a configuração para gerar compromissos recorrentes. Aplicar as mesmas regras dos números de ocorrência da série de atividades, acrescentando a repetição anual.
 
-Se `possui_despesa_padrao` for falso, `valor_previsto_padrao` deverá ser nulo. Se for verdadeiro, exigir valor preenchido e positivo. Os dois campos de lembrete deverão estar ambos nulos, para lembrete desativado, ou ambos preenchidos.
+Restrições: nome padrão com 3 a 100 caracteres. Se `possui_despesa_padrao` for falso, `valor_previsto_padrao` deverá ser nulo. Se for verdadeiro, exigir valor preenchido e positivo. Os dois campos de lembrete deverão estar ambos nulos, para lembrete desativado, ou ambos preenchidos.
 
 8 - IMPORTANCIA — `importancia`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- categoria_id (chave estrangeira → categoria_importancia.id, INT, obrigatório).
-- serie_id (chave estrangeira → serie_importancia.id, INT, opcional).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- categoria_id (chave estrangeira → categoria_importancia.id, UUID, obrigatório).
+- serie_id (chave estrangeira → serie_importancia.id, UUID, opcional).
 - numero_ocorrencia (INT, opcional).
 - nome (VARCHAR(100), obrigatório).
 - descricao (VARCHAR(200), opcional).
@@ -924,7 +924,7 @@ Se `possui_despesa_padrao` for falso, `valor_previsto_padrao` deverá ser nulo. 
 
 Criar unicidade para `(serie_id, numero_ocorrencia)`. Aplicar a mesma regra de preenchimento conjunto desses dois campos utilizada em Atividade. Cada linha terá seus próprios dados, mesmo quando tiver sido gerada a partir de uma série.
 
-Restrições condicionais: se não houver despesa, o valor previsto será nulo; se houver, exigir valor preenchido e positivo. `concluida_manualmente_em` deverá ser nulo quando `possui_despesa` for verdadeiro.
+Restrições: nome com 3 a 100 caracteres. Restrições condicionais: se não houver despesa, o valor previsto será nulo; se houver, exigir valor preenchido e positivo. `concluida_manualmente_em` deverá ser nulo quando `possui_despesa` for verdadeiro.
 
 O pagamento será encontrado pelo relacionamento com `movimentacao_financeira`. Não criar nesta tabela outra coluna de valor pago nem uma segunda chave estrangeira de volta para o lançamento; o vínculo ficará em um único lado.
 
@@ -936,7 +936,7 @@ Situação calculada para uma importância não excluída:
 
 9 - CATEGORIA_FINANCEIRA — `categoria_financeira`
 
-- id (chave primária, auto incremento, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
 - nome (VARCHAR(50), obrigatório).
 - tipo (VARCHAR(7), obrigatório; valores: RECEITA ou DESPESA).
 - ativa (BOOLEAN, obrigatório, padrão verdadeiro).
@@ -949,9 +949,9 @@ Categorias iniciais de despesa: Alimentação, Transporte, Moradia, Contas, Comp
 
 10 - MOVIMENTACAO_FINANCEIRA — `movimentacao_financeira`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- categoria_id (chave estrangeira composta com tipo → categoria_financeira.id/tipo, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- categoria_id (chave estrangeira composta com tipo → categoria_financeira.id/tipo, UUID, obrigatório).
 - tipo (VARCHAR(7), obrigatório; valores: RECEITA ou DESPESA).
 - nome (VARCHAR(100), obrigatório).
 - descricao (VARCHAR(200), opcional).
@@ -959,7 +959,7 @@ Categorias iniciais de despesa: Alimentação, Transporte, Moradia, Contas, Comp
 - data_movimentacao (DATE, obrigatório; data real do recebimento ou pagamento).
 - contraparte (VARCHAR(100), opcional; pagador, destinatário ou estabelecimento, conforme o tipo).
 - forma_movimentacao (VARCHAR(20), opcional; valores controlados indicados abaixo).
-- importancia_id (chave estrangeira → importancia.id, INT, opcional, único quando preenchido).
+- importancia_id (chave estrangeira → importancia.id, UUID, opcional, único quando preenchido).
 - importancia_vinculada_em (DATETIME em UTC, opcional).
 - excluida_em (DATETIME em UTC, opcional).
 - criado_em (DATETIME em UTC, obrigatório).
@@ -971,6 +971,7 @@ Despesas: formas PIX, DINHEIRO, CARTAO_DEBITO, TRANSFERENCIA, BOLETO ou OUTROS.
 
 Restrições importantes:
 
+- Nome com 3 a 100 caracteres.
 - `valor > 0`. O sinal exibido e a participação no saldo serão definidos por `tipo`.
 - A chave estrangeira composta `(categoria_id, tipo)` deverá apontar para `(categoria_financeira.id, categoria_financeira.tipo)`, impedindo categoria de receita em despesa e vice-versa.
 - `importancia_id` somente poderá ser preenchido quando `tipo = DESPESA`.
@@ -984,9 +985,9 @@ O momento de vínculo será necessário para ordenar conclusões: vincular hoje 
 
 11 - LEMBRETE_IMPORTANCIA — `lembrete_importancia`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- importancia_id (chave estrangeira → importancia.id, INT, obrigatório, único).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- importancia_id (chave estrangeira → importancia.id, UUID, obrigatório, único).
 - antecedencia_dias (SMALLINT, obrigatório; valores: 0, 1, 3 ou 7).
 - horario (TIME, obrigatório; horário local do lembrete).
 - agendado_para (DATETIME em UTC, obrigatório).
@@ -1004,9 +1005,9 @@ Concluir ou excluir uma importância cancelará lembretes ainda não enviados. R
 
 12 - NOTIFICACAO — `notificacao`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
-- lembrete_id (chave estrangeira → lembrete_importancia.id, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
+- lembrete_id (chave estrangeira → lembrete_importancia.id, UUID, obrigatório).
 - versao_agendamento (INT, obrigatório).
 - titulo (VARCHAR(120), obrigatório).
 - mensagem (VARCHAR(500), obrigatório).
@@ -1021,8 +1022,8 @@ Este modelo cobre as notificações internas previstas para o sino do aplicativo
 
 13 - REQUISICAO_IDEMPOTENTE — `requisicao_idempotente`
 
-- id (chave primária, auto incremento, INT, obrigatório).
-- usuario_id (chave estrangeira → usuario.id, INT, obrigatório).
+- id (chave primária, UUID v7 gerado pela aplicação, obrigatório).
+- usuario_id (chave estrangeira → usuario.id, UUID, obrigatório).
 - chave (VARCHAR(64), obrigatório; identificador aleatório de uma operação enviado pelo aplicativo).
 - acao (VARCHAR(50), obrigatório; exemplo: CADASTRAR_DESPESA).
 - conteudo_hash (VARCHAR(64), obrigatório; identificação do conteúdo normalizado da solicitação).
@@ -1125,7 +1126,8 @@ As restrições únicas já indicadas também deverão ser criadas, especialment
 
 | Especificação | Tipo ou configuração no ORM |
 | --- | --- |
-| INT | Integer; PK gerada com primary_key=True e autoincrement=True conforme o dialeto. |
+| UUID (identificadores) | Uuid; PK com primary_key=True e default=uuid.uuid7 (aplicação), sem server_default. |
+| INT (demais colunas inteiras) | Integer. |
 | SMALLINT | SmallInteger. |
 | VARCHAR(n) | String(n). |
 | BOOLEAN | Boolean. |
@@ -1133,7 +1135,7 @@ As restrições únicas já indicadas também deverão ser criadas, especialment
 | TIME | Time, usando datetime.time no Python. |
 | DATETIME em UTC | DateTime(timezone=True), com normalização para UTC e adaptação ao banco escolhido. |
 | DECIMAL(12,2) | Numeric(12, 2, asdecimal=True), utilizando Decimal no Python. |
-| JSON | JSON. |
+| JSON | JSON(none_as_null=True): `None` do Python grava `NULL` do SQL. |
 | Obrigatório/opcional | nullable=False / nullable=True. |
 | Chave estrangeira simples | ForeignKey. |
 | Chave estrangeira composta | ForeignKeyConstraint. |
@@ -1141,11 +1143,13 @@ As restrições únicas já indicadas também deverão ser criadas, especialment
 | Regras de domínio | CheckConstraint, além da validação da aplicação. |
 | Relação entre objetos | relationship; não substitui PK, FK ou UNIQUE. |
 
-Para os campos de valores controlados, utilizar enumerações Python com armazenamento textual validado. No SQLAlchemy, uma opção é `Enum(..., native_enum=False, create_constraint=True, validate_strings=True)`, com nomes estáveis para as restrições; outra é `String` com `CheckConstraint`. Escolher uma representação e usá-la consistentemente, distinguindo os valores técnicos, como MEDIA, dos rótulos exibidos, como Média.
+Para os campos de valores controlados, utilizar enumerações Python com armazenamento textual validado. No SQLAlchemy, usar `Enum(..., native_enum=False, create_constraint=True, validate_strings=True)`, com a restrição nomeada `ck_<tabela>_<coluna>` (DEC-MV-07), de forma consistente, distinguindo os valores técnicos, como MEDIA, dos rótulos exibidos, como Média.
 
-Dinheiro: DECIMAL(12,2) estabelece um máximo por lançamento de R$ 9.999.999.999,99, um limite técnico proposto a validar no formulário. Não utilizar Float nem converter entradas monetárias primeiro para float. Validar até duas casas decimais antes da gravação, sem arredondar silenciosamente uma entrada com precisão maior. Totais poderão ultrapassar o limite individual e deverão ser calculados com precisão suficiente. Se o banco escolhido for SQLite, revisar esta decisão: sua representação REAL é aproximada; para manter exatidão monetária, considerar valores em centavos inteiros e conversão para Decimal na aplicação.
+Dinheiro: DECIMAL(12,2) estabelece um máximo por lançamento de R$ 9.999.999.999,99, um limite técnico proposto a validar no formulário. Não utilizar Float nem converter entradas monetárias primeiro para float. Validar até duas casas decimais antes da gravação, sem arredondar silenciosamente uma entrada com precisão maior. Totais poderão ultrapassar o limite individual e deverão ser calculados com precisão suficiente. O SGBD é PostgreSQL, cujo NUMERIC é exato.
 
 Datas: o formato DD/MM/AAAA pertence à apresentação. Datas de nascimento, atividades e pagamentos serão valores Date; instantes como criação, conclusão e envio serão normalizados para UTC. A flag timezone=True não garante suporte uniforme a fuso em todos os bancos; confirmar o comportamento do dialeto.
+
+Timestamps (DEC-MV-07): `criado_em` e `criada_em` usam `server_default=now()`, aplicado pelo banco em toda inserção que omite a coluna. `atualizado_em` usa `server_default=now()` na inserção e `onupdate=now()`, que o SQLAlchemy acrescenta aos UPDATEs que ele mesmo emite (ORM e Core); um UPDATE em SQL textual não altera `atualizado_em`. O `now()` do PostgreSQL é o início da transação. Com `eager_defaults`, os valores gerados voltam por `RETURNING`. Detalhe em docs/arquitetura/arquitetura_api_minhavida.md §10.3.
 
 O uso de `relationship` para expressar um pagamento único não basta para impor essa regra no banco: manter também a restrição única de `movimentacao_financeira.importancia_id`.
 

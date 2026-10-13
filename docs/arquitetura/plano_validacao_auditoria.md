@@ -3,8 +3,8 @@
 | Campo | Valor |
 | --- | --- |
 | Documento | `docs/arquitetura/plano_validacao_auditoria.md` |
-| Estado | **PARCIALMENTE ACEITO** em 2026-10-11 (DEC-MV-04): política de testes (§2, §3 e §5) e catálogo da F1 (§4). As demais seções e os catálogos das outras fases seguem PROPOSTOS, com as decisões de cada fase |
-| Data | 2026-10-10. Atualizado em 2026-10-11 (CT-F6-14, nome da F8, §6 e §9) |
+| Estado | **PARCIALMENTE ACEITO** em 2026-10-11 (DEC-MV-04): política de testes (§2, §3 e §5) e catálogo da F1 (§4). As demais seções e os catálogos das outras fases seguem PROPOSTOS, com as decisões de cada fase. Em 2026-10-13, o catálogo da F2 passou a valer com DEC-MV-06 a 08, e §3.4 foi precisado (REC-MV-034) |
+| Data | 2026-10-10. Atualizado em 2026-10-11 (CT-F6-14, nome da F8, §6 e §9) e em 2026-10-13 (§3.4, CT-F1-17 e catálogo da F2; depois da auditoria da F2, texto do CT-F2-07 conforme a emenda F2-D1) |
 | Relacionados | ADR-0001 D-14, `plano_fases_api.md`, `matriz_requisitos_api.md` |
 
 > Todos os testes, comandos e resultados deste documento são **PLANEJADOS**. Nenhum foi executado na F0.
@@ -121,7 +121,8 @@ Um nome contendo “test” não é prova suficiente. A guarda é testada (CT-F1
 
 | Modo | Uso | Mecanismo |
 | --- | --- | --- |
-| Commit real + limpeza | Testes de transação, concorrência, HTTP e serviços (padrão a partir da F1) | Engine própria. Ao fim, `limpar_dados()`: `TRUNCATE` das tabelas de domínio do usuário, com `RESTART IDENTITY CASCADE` restrito à lista explícita, preservando catálogos e `alembic_version`. Sempre com guarda |
+| Commit real + limpeza | Testes de transação, concorrência, HTTP e serviços (padrão a partir da F1) | Engine própria. Ao fim, `limpar_dados()`: um único `TRUNCATE` com a lista explícita das tabelas que não são catálogo, **sem** `RESTART IDENTITY` (não há identidades, ADR-0002) e **sem** `CASCADE` (uma lista incompleta falha, em vez de apagar outra tabela), preservando catálogos e `alembic_version`. Sempre com guarda. *Precisado em 2026-10-13 (REC-MV-034)* |
+| Transação revertida (F2+) | Testes de restrição e de introspecção que não confirmam transação | Conexão própria, com transação aberta pela fixture e revertida ao fim do teste. Cada violação esperada roda dentro de `SAVEPOINT` (`begin_nested`), para a transação continuar utilizável. *Acrescentado em 2026-10-13 (REC-MV-034)* |
 | Esquema auxiliar de infraestrutura (F1) | Testes de sessão e transação antes de existirem tabelas | Schema `teste_infra`, criado pela fixture, fora do metadata e do Alembic. Evita ruído no `alembic check` |
 | Esquema de domínio (F2+) | Todas as fases com tabelas | `alembic upgrade head` uma vez por sessão (fixture síncrona), seguido da limpeza por teste |
 
@@ -176,7 +177,7 @@ Formato: `CT-F<fase>-<nn>`. **c** = marcador `concorrencia`. Arquivos previstos 
 | CT-F1-14 | Devolução de conexões ao pool | Após requisições com sucesso e com erro, `engine.pool.checkedout() == 0` |
 | CT-F1-15 **c** | `lock_timeout` | Com `DB_LOCK_TIMEOUT_MS = 200` e outra conexão segurando `pg_advisory_lock(k)`: endpoint de teste → 503 `CONFLITO_CONCORRENCIA` com `Retry-After` |
 | CT-F1-16 | `X-Request-ID` | Valor válido é propagado. Ausente ou inválido → gerado (hex de 32) |
-| CT-F1-17 | Alembic sem revisões (`test_alembic_ambiente.py`) | `command.upgrade(cfg, "head")` em contexto síncrono. `ScriptDirectory.get_heads() == []`. `command.check(cfg)` sem diferenças |
+| CT-F1-17 | Alembic sem revisões (`test_alembic_ambiente.py`) | `command.upgrade(cfg, "head")` em contexto síncrono. `ScriptDirectory.get_heads() == []`. `command.check(cfg)` sem diferenças. **A partir da F2:** `get_heads() == ["0001"]`, no teste renomeado `test_upgrade_head_com_revisao_inicial` |
 | CT-F1-18 | Alembic com `config.attributes["connection"]` | A partir de teste async com `await conn.run_sync(...)`, sem erro de loop aninhado |
 | CT-F1-19 | `env.py` | Não contém `api_gestao_pessoal.main` nem URL literal. `alembic.ini` sem `sqlalchemy.url` preenchido |
 | CT-F1-20 | Guarda de banco descartável | URL que não pertence ao container → `RuntimeError` antes de qualquer comando |
@@ -195,10 +196,10 @@ Formato: `CT-F<fase>-<nn>`. **c** = marcador `concorrencia`. Arquivos previstos 
 | CT-F2-04 | Inserção pelo ORM gera `uuid.UUID` com `version == 7` |
 | CT-F2-05 | SQL textual sem `id` → SQLSTATE `23502` |
 | CT-F2-06 | 30 categorias exatas (grafia, acentos e separação por catálogo e tipo), todas ativas |
-| CT-F2-07 | Segundo `upgrade head` inócuo. Reexecução da função de seed da revisão não duplica |
+| CT-F2-07 | Segundo `upgrade head` inócuo. Reexecução das instruções de `instrucoes_categorias()` da revisão não duplica. O módulo da revisão não importa `api_gestao_pessoal` |
 | CT-F2-08 | `downgrade base` seguido de `upgrade head` no container (com guarda) |
 | CT-F2-09 | `alembic check` sem diferenças |
-| CT-F2-10 | Nomes de constraints e índices ≤ 63 e idênticos entre metadata e banco. Oito índices com a ordem exata de colunas |
+| CT-F2-10 | Nomes de constraints e índices ≤ 63 e idênticos entre metadata e banco, iguais à lista literal de 93 nomes do Prompt F2. Oito índices com a ordem exata de colunas |
 | CT-F2-11 | Cinco FKs compostas de propriedade: proprietário correto aceito, outro usuário rejeitado (`23503`) |
 | CT-F2-12 | Categoria financeira × tipo (`23503`). “Outros” existe em ambos os tipos como registros distintos |
 | CT-F2-13 | Ocorrências: várias avulsas. Par incompleto e número < 1 → `23514`. Duplicata → `23505`. Exclusão lógica não libera o par. `numero_final = 0` aceito |
@@ -207,8 +208,8 @@ Formato: `CT-F<fase>-<nn>`. **c** = marcador `concorrencia`. Arquivos previstos 
 | CT-F2-16 | Unicidades de apoio: recuperação por usuário; tokens únicos com vários nulos; lembrete por importância; notificação por versão; versões antigas válidas após mudar a versão do lembrete; idempotência por `(usuario, acao, chave)` |
 | CT-F2-17 | `Decimal` (0.01 e 9999999999.99) em ida e volta. `resposta = None` → SQL `NULL` (não JSON `null`) |
 | CT-F2-18 | Exclusão física de categoria referenciada → `23503`. Todas as FKs com `confdeltype = 'r'` |
-| CT-F2-19 | Timestamps preenchidos. `atualizado_em` muda no update do ORM e é legível sem I/O tardio (`eager_defaults`). `notificacao.criada_em` presente |
-| CT-F2-20 | (somente se DEC-MV-08 for aprovada) CHECKs extras de nome |
+| CT-F2-19 | Timestamps preenchidos. `atualizado_em` muda no update do ORM e é legível sem I/O tardio (`eager_defaults`). `notificacao.criada_em` presente. UPDATE em SQL textual não altera `atualizado_em` (arquitetura §10.3.1) |
+| CT-F2-20 | CHECKs extras de nome (DEC-MV-08, aprovada em 2026-10-13): `importancia.nome`, `movimentacao_financeira.nome`, `serie_atividade.nome_padrao` e `serie_importancia.nome_padrao` |
 
 ### F3 — Identidade e acesso (`tests/identidade/`)
 

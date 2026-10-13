@@ -4,8 +4,8 @@
 | --- | --- |
 | ID | ADR-0001 |
 | Título | Arquitetura da API MinhaVida: camadas, transações, concorrência, idempotência, autenticação, erros, recorrência, lembretes, leitura consistente e testes |
-| Estado | **PARCIALMENTE ACEITO.** D-01, D-02, D-03, D-04, D-08 e D-14 foram aceitas em 2026-10-11 (DEC-MV-01 a 04). D-09 está aceita **somente** na convenção de nomes (DEC-MV-25, 2026-10-11). Registro em `indice.md` §4. As demais decisões continuam PROPOSTAS. O ADR como um todo **não** está aceito |
-| Data | 2026-10-09. Atualizado em 2026-10-11 |
+| Estado | **PARCIALMENTE ACEITO.** D-01, D-02, D-03, D-04, D-08 e D-14 foram aceitas em 2026-10-11 (DEC-MV-01 a 04). D-09 foi aceita na convenção de nomes em 2026-10-11 (DEC-MV-25) e no restante em 2026-10-13 (DEC-MV-07). Registro em `indice.md` §4. As demais decisões continuam PROPOSTAS. O ADR como um todo **não** está aceito |
+| Data | 2026-10-09. Atualizado em 2026-10-11 e em 2026-10-13 (D-09 aceita) |
 | Autor | Claude Opus 5.5 |
 | Fontes | `CLAUDE.md` (diretrizes, telas 1–11 e contrato de tabelas), `docs/arquitetura/analise_projeto_minhavida.md`, `docs/arquitetura/arquitetura_api_minhavida.md` (detalhamento canônico), diretrizes de stack do usuário |
 | Relacionados | ADR-0002 (identificadores UUID) |
@@ -55,7 +55,7 @@ Cada decisão tem um ID estável `D-NN`. A coluna “Aprovação” indica a dec
 | D-06 | Idempotência | DEC-MV-15 | PROPOSTO | F4+ |
 | D-07 | Autenticação e autorização | DEC-MV-09 | PROPOSTO | F3+ |
 | D-08 | Contrato de erros | DEC-MV-03 | **ACEITO** (2026-10-11) | F1+ |
-| D-09 | Modelo físico e migrações | DEC-MV-07. Convenção de nomes: DEC-MV-25 | **PARCIALMENTE ACEITO**: somente `CONVENCAO_NOMES` e sua aplicação ao `Base.metadata` (DEC-MV-25, 2026-10-11). Enums, timestamps, `eager_defaults`, mixin, JSON, migração inicial e seeds seguem PROPOSTOS (DEC-MV-07) | F1 (somente a convenção de nomes), F2 |
+| D-09 | Modelo físico e migrações | DEC-MV-07. Convenção de nomes: DEC-MV-25 | **ACEITO**: convenção de nomes em 2026-10-11 (DEC-MV-25); enums, timestamps, `eager_defaults`, mixin, JSON, migração inicial e seeds em 2026-10-13 (DEC-MV-07) | F1 (somente a convenção de nomes), F2 |
 | D-10 | Recorrência | DEC-MV-16 | PROPOSTO | F5, F7, F9 |
 | D-11 | Lembretes e notificações | DEC-MV-20 | PROPOSTO | F7, F9 |
 | D-12 | Leitura consistente e paginação | DEC-MV-14 | PROPOSTO | F4+ |
@@ -265,7 +265,8 @@ Mensagens exigidas literalmente pelos requisitos (por exemplo, 3.4.8, 3.4.10, 10
 
 - **Enumerações:** `sqlalchemy.Enum(EnumPython, native_enum=False, create_constraint=True, validate_strings=True, length=<comprimento do contrato>, name=<nome estável>)`. Os valores técnicos são iguais aos nomes dos membros (`StrEnum`). Sem ENUM nativo.
 - Domínios numéricos (`antecedencia_dias`) e domínios dependentes de outra coluna (forma × tipo) usam `CheckConstraint` explícita.
-- **Convenção de nomes** no `MetaData`. Aceita em 2026-10-11 por DEC-MV-25, **somente** quanto a `CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)`, exatamente como na arquitetura §10.1 e no Prompt F1 §6. Os itens marcados “F2” seguem PROPOSTOS (DEC-MV-07):
+- CHECKs de nome com 3 a 100 caracteres: `atividade.nome` (contrato) e, por DEC-MV-08 (aprovada em 2026-10-13), também `importancia.nome`, `movimentacao_financeira.nome`, `serie_atividade.nome_padrao` e `serie_importancia.nome_padrao`. Não é uma decisão deste ADR; está registrada aqui por afetar o modelo físico.
+- **Convenção de nomes** no `MetaData`. Aceita em 2026-10-11 por DEC-MV-25, **somente** quanto a `CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)`, exatamente como na arquitetura §10.1 e no Prompt F1 §6. Os itens marcados “F2” foram aceitos em 2026-10-13 (DEC-MV-07):
   - `pk_%(table_name)s`
   - `uq_%(table_name)s_%(column_0_N_name)s`
   - `ck_%(table_name)s_%(constraint_name)s`
@@ -287,6 +288,7 @@ Mensagens exigidas literalmente pelos requisitos (por exemplo, 3.4.8, 3.4.10, 10
   - Suporte a `config.attributes["connection"]`.
   - **Uma migração inicial na F2 com as 13 tabelas e os 30 seeds.** Os seeds usam UUIDv7 gerado na execução e `ON CONFLICT DO NOTHING` sobre a chave natural, sem importar modelos vivos.
   - Sem `create_all`, sem `stamp` como prova e sem reescrever revisões aplicadas.
+  - As revisões passam pelos mesmos gates do código: `alembic/` incluído no Ruff e no Pyright, com a exceção `PLC0415` restrita a `alembic/env.py` (ACH-MV-F1-005, opção A, aprovada em 2026-10-13; implementada na F2).
   - Downgrade destrutivo apenas em banco descartável. A recuperação em produção é feita por backup.
 
 **Justificativa:** o contrato é fortemente interligado por FKs compostas. Criar as 13 tabelas de uma vez dá um esquema estável às fases de comportamento.
@@ -424,6 +426,7 @@ Os CTs listados em `plano_validacao_auditoria.md` §4 para cada decisão, em esp
 O estado muda para ACEITO **por decisão**, mediante aprovação explícita do usuário, registrada em `docs/arquitetura/indice.md` §4 com data e escopo.
 
 - Aceitas em 2026-10-11: D-01, D-02, D-03, D-04, D-08 e D-14 (DEC-MV-01 a 04). DEC-MV-05 (higiene da F1) não corresponde a uma decisão deste ADR.
-- Aceita parcialmente em 2026-10-11: D-09, somente no item “convenção de nomes” (`CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)`), por DEC-MV-25. O restante de D-09 depende de DEC-MV-07.
+- Aceita parcialmente em 2026-10-11: D-09, somente no item “convenção de nomes” (`CONVENCAO_NOMES` e `MetaData(naming_convention=CONVENCAO_NOMES)`), por DEC-MV-25.
+- Aceita no restante em 2026-10-13: D-09 (enums, timestamps, `eager_defaults`, `CriadoAtualizadoMixin`, JSON, nomes de até 63 caracteres, migração inicial e seeds), por DEC-MV-07. Com isso, D-09 está aceita integralmente.
 - Uma decisão aceita alcança as seções de detalhe que ela cita somente na parte que detalha essa decisão. Partes dessas seções que servem a fases posteriores (por exemplo, as variáveis de F3 e F9 em arquitetura §3.1) seguem as decisões dessas fases.
 - As demais decisões continuam PROPOSTAS. O ADR não está aceito como um todo.

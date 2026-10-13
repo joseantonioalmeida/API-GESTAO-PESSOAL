@@ -4,7 +4,7 @@
 | --- | --- |
 | Documento | `docs/arquitetura/matriz_requisitos_api.md` |
 | Estado | PROPOSTO |
-| Data | 2026-10-10. Atualizado em 2026-10-11 (escopo financeiro e exclusões) |
+| Data | 2026-10-10. Atualizado em 2026-10-11 (escopo financeiro e exclusões) e em 2026-10-13 (contrato de dados da F2: DEC-MV-06 a 08) |
 | Fonte dos requisitos | `CLAUDE.md` (telas 1–11 e contrato de tabelas), identificadores preservados |
 
 ## Convenções
@@ -206,7 +206,7 @@
 
 | Req | Caso de uso → endpoint | Dados / invariantes | Transação / decisão | Fase | Verificação | Situação |
 | --- | --- | --- | --- | --- | --- | --- |
-| 8.1.1 | Nome 3–100 → `POST /importancias` | Validação. CHECK opcional (DEC-MV-08) | X + Idem | F7 | CT-F7-02 | PLANEJADO |
+| 8.1.1 | Nome 3–100 → `POST /importancias` | Validação. CHECK `ck_importancia_nome_tamanho` (DEC-MV-08, aprovada em 2026-10-13) | X + Idem | F7 | CT-F7-02 | PLANEJADO |
 | 8.1.2 | Categoria (catálogo próprio) | `categoria_importancia` | — | F7 | CT-F7-02 | PLANEJADO |
 | 8.1.3 | Data válida | — | — | F7 | CT-F7-02 | PLANEJADO |
 | 8.1.4 | Possui despesa? Padrão Não | `possui_despesa` com padrão `false` | — | F7 | CT-F7-01 | PLANEJADO |
@@ -335,7 +335,7 @@
 
 | ID | Item | Fase | Verificação | Situação |
 | --- | --- | --- | --- | --- |
-| T-01 a T-13 | 13 tabelas e 134 colunas (tipos de ID conforme ADR-0002) | F2 | CT-F2-01 a 03 | AGUARDANDO_DECISAO (DEC-MV-06, 07) |
+| T-01 a T-13 | 13 tabelas e 134 colunas (tipos de ID conforme ADR-0002) | F2 | CT-F2-01 a 03 | PLANEJADO (F2; DEC-MV-06 e 07 aprovadas em 2026-10-13) |
 | T-SEED | 30 categorias | F2 | CT-F2-06, 07 | PLANEJADO |
 | R-USUARIO | Normalização e unicidade de e-mail. Nascimento não futuro. Fuso persistido | F2 (UNIQUE), F3 (aplicação) | CT-F2-16, CT-F3-01 a 03 | PLANEJADO |
 | R-RECUPERACAO | Recuperação única. Hashes. Reenvio. Tentativas. Consumo único | F2/F3 | CT-F2-16, CT-F3-11 a 19 | PLANEJADO |
@@ -360,7 +360,7 @@
 | REP | Representação de repetições (materialização, alcance, mensal/anual) | F5/F7 | CT-F5-20 a 31, CT-F7-10 a 13, 17 | AGUARDANDO_DECISAO (DEC-MV-16, 18) |
 | CALC | Informações calculadas sem coluna | F5–F10 | CTs de indicadores | PLANEJADO |
 | IDX | 8 índices iniciais | F2 | CT-F2-10 | PLANEJADO |
-| MAP | Mapeamento SQLAlchemy (Enum textual, `Numeric`, `DateTime` tz, `JSON`) | F1/F2 | CT-F2-02, 17, 19 | AGUARDANDO_DECISAO (DEC-MV-07) |
+| MAP | Mapeamento SQLAlchemy (Enum textual, `Numeric`, `DateTime` tz, `JSON`) | F1/F2 | CT-F2-02, 17, 19 | PLANEJADO (F2; DEC-MV-07 aprovada em 2026-10-13) |
 
 ## Escopo financeiro (instrução do usuário, 2026-10-11)
 

@@ -30,7 +30,6 @@ exclude = [
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",
-    "alembic",
 ]
 
 [tool.ruff.lint]
@@ -54,6 +53,9 @@ known-first-party = ["api_gestao_pessoal"]
 # Asserções de teste comparam contra valores esperados literais (ex:
 # contagens); não há constante nomeada sensata para extrair aqui.
 "tests/*" = ["PLR2004"]
+# O env.py importa as Settings dentro de obter_url() para só ler o
+# ambiente quando a URL não vem de config.attributes (ACH-MV-F1-005).
+"alembic/env.py" = ["PLC0415"]
 
 
 # ============================
@@ -62,7 +64,7 @@ known-first-party = ["api_gestao_pessoal"]
 [tool.pyright]
 typeCheckingMode = "standard"
 pythonVersion = "3.14"
-include = ["src", "tests"]
+include = ["src", "tests", "alembic"]
 exclude = [
     "**/venv",
     "**/.venv",

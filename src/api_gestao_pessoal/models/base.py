@@ -1,3 +1,5 @@
+"""Base declarativa, convenção de nomes e mixin de timestamps."""
+
 from datetime import datetime
 
 from sqlalchemy import DateTime, MetaData, func
@@ -16,17 +18,23 @@ class Base(DeclarativeBase):
     """Base declarativa compartilhada por todos os modelos ORM."""
 
     metadata = MetaData(naming_convention=CONVENCAO_NOMES)
+    # Valores gerados no servidor voltam por RETURNING no INSERT e no
+    # UPDATE, sem I/O tardio na AsyncSession (DEC-MV-07).
+    __mapper_args__ = {"eager_defaults": True}
 
 
-class TimestampMixin:
-    """Adiciona colunas de auditoria de tempo às tabelas."""
+class CriadoAtualizadoMixin:
+    """`criado_em` e `atualizado_em` das 8 tabelas que têm as duas colunas.
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        nullable=False,
+    `criado_em`: padrão do banco (`DEFAULT now()`). `atualizado_em`: o
+    mesmo padrão na inserção e `onupdate`, aplicado pelo SQLAlchemy nos
+    UPDATEs que ele emite. Não há trigger no banco.
+    """
+
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at: Mapped[datetime] = mapped_column(
+    atualizado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),

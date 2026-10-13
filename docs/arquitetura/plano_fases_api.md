@@ -3,8 +3,8 @@
 | Campo | Valor |
 | --- | --- |
 | Documento | `docs/arquitetura/plano_fases_api.md` |
-| Estado | PROPOSTO. F1 **`APROVADO_COM_P3`** na reauditoria de 2026-10-11, aguardando integração pelo usuário (`indice.md` §5). Decisões da F1 aprovadas: DEC-MV-01 a 05, DEC-MV-25 (escopo limitado) e DEC-MV-26. Demais fases dependem das decisões pendentes |
-| Data | 2026-10-10. Atualizado em 2026-10-11 (nome da F8, escopo financeiro, gates da F1 e da F5) e em 2026-10-13 (estado da F1, P-DOC-07) |
+| Estado | PROPOSTO. F1 **`APROVADO_COM_P3`** e integrada no commit `90412ec` (G6 cumprido em 2026-10-13). F2 **`APROVADO_COM_P3`** na auditoria de 2026-10-13, aguardando a integração por commit do usuário (G6 pendente). Demais fases dependem das decisões pendentes |
+| Data | 2026-10-10. Atualizado em 2026-10-11 (nome da F8, escopo financeiro, gates da F1 e da F5) e em 2026-10-13 (estado da F1, P-DOC-07; G6 da F1 e preparação da F2; auditoria e fechamento documental da F2) |
 | Relacionados | ADR-0001, ADR-0002, `arquitetura_api_minhavida.md`, `plano_validacao_auditoria.md`, `matriz_requisitos_api.md` |
 
 > A numeração das fases (F0–F11) é independente da numeração das telas (1–11) e das tabelas (1–13).
@@ -49,8 +49,8 @@ Ordem de execução (sequencial, uma fase por vez): F1 → F2 → F3 → F4 → 
 | Fase | Nome | Decisões exigidas (aceitas) | Estado atual |
 | --- | --- | --- | --- |
 | F0 | Arquitetura e reconciliação | — | ENTREGUE PARA REVISÃO (documentos desta sessão) |
-| F1 | Fundação técnica | DEC-MV-01 a 05, DEC-MV-25 e DEC-MV-26 (**aprovadas** em 2026-10-11) | **`APROVADO_COM_P3`** (reauditoria de 2026-10-11). Aguardando integração por commit do usuário (G6). P3 em acompanhamento: ACH-MV-F1-005 a 007 |
-| F2 | Esquema de dados | DEC-MV-06, 07, 08 e `CLAUDE.md` atualizado | AGUARDANDO_DECISAO |
+| F1 | Fundação técnica | DEC-MV-01 a 05, DEC-MV-25 e DEC-MV-26 (**aprovadas** em 2026-10-11) | **`APROVADO_COM_P3`** (reauditoria de 2026-10-11). **Integrada** no commit `90412ec4b9ecb6594e0b9e571c1dbba0bb1a4a30` (G6 cumprido em 2026-10-13). P3 ACH-MV-F1-005, 006 e 007 encerrados em 2026-10-13, com as evidências da auditoria da F2 (`indice.md` §4, M13) |
+| F2 | Esquema de dados | DEC-MV-06, 07, 08 e ACH-MV-F1-005, opção A (**aprovadas** em 2026-10-13). `CLAUDE.md` atualizado em 2026-10-13 | **`APROVADO_COM_P3`** na auditoria de 2026-10-13 (`docs/auditorias/AUDITORIA_F2_ESQUEMA_DADOS.md`). Aguardando a integração por commit do usuário (G6 pendente). P3: ACH-MV-F2-001 e 003 encerrados; ACH-MV-F2-002 em acompanhamento até o próximo Prompt Master. Histórico: Prompt F2 em `PRONTO_PARA_ETAPA_A` em 2026-10-13 |
 | F3 | Identidade e acesso | DEC-MV-09 a 13 | AGUARDANDO_DECISAO |
 | F4 | Núcleo transacional | DEC-MV-14, 15 | AGUARDANDO_DECISAO |
 | F5 | Atividades e recorrência | DEC-MV-16 e DEC-MV-24 | AGUARDANDO_DECISAO |
@@ -126,28 +126,29 @@ Ordem de execução (sequencial, uma fase por vez): F1 → F2 → F3 → F4 → 
 
 1. **Objetivo:** 13 modelos com UUIDv7, migração inicial completa, 30 seeds e testes de integridade.
    - **Valor:** um esquema estável e verificado para todas as fases.
-2. **Decisões:** DEC-MV-06 (ADR-0002), DEC-MV-07 e DEC-MV-08.
-   - **Fontes:** `CLAUDE.md` **atualizado** (diff de ADR-0002) e arquitetura §10.
-3. **Dependências:** F1 aprovada e integrada.
+2. **Decisões:** DEC-MV-06 (ADR-0002), DEC-MV-07 e DEC-MV-08, e a opção A do ACH-MV-F1-005, todas aprovadas em 2026-10-13.
+   - **Fontes:** `CLAUDE.md` **atualizado** em 2026-10-13 (diff de ADR-0002, DEC-MV-07 e DEC-MV-08) e arquitetura §10.
+3. **Dependências:** F1 aprovada e integrada. **Cumprido:** baseline `90412ec4b9ecb6594e0b9e571c1dbba0bb1a4a30` (G6 da F1, 2026-10-13).
 4. **Requisitos:** T-01 a T-13, RI-1 a RI-9 (parte estrutural), IDX e MAP.
    - **Fora do escopo:** regras de serviço (§9 do prompt anterior), endpoints.
 5. **Endpoints:** nenhum.
 6. **Esquema:**
    - `models/enums.py`, os 13 arquivos de modelo, `CriadoAtualizadoMixin` (substitui `TimestampMixin`), `eager_defaults`;
-   - revisão `alembic/versions/<data>_<rev>_esquema_inicial.py` com tabelas, constraints, índices e seeds idempotentes;
+   - revisão `alembic/versions/<AAAAMMDD>_0001_esquema_inicial.py` (ID `0001`) com tabelas, constraints, índices e seeds idempotentes;
    - `requires-python` já ajustado na F1.
 7. **Transações:** somente nos testes. Seeds com `ON CONFLICT DO NOTHING`.
-8. **Arquivos:** `src/api_gestao_pessoal/models/*`, `alembic/versions/*` (nova), `tests/esquema/*`, `tests/conftest.py` (fixture de migração por sessão).
-9. **Testes:** CT-F2-01 a CT-F2-20.
-   - **Regressões:** CT-F1-17 e CT-F1-19 (agora com revisão).
-10. **Comandos:**
+8. **Arquivos:** `src/api_gestao_pessoal/models/*`, `alembic/versions/*` (nova), `tests/esquema/*`, `tests/conftest.py` (fixture de migração por sessão), `tests/apoio/*` (limpeza e apoio de esquema), `tests/infra/test_alembic_ambiente.py` (CT-F1-17) e `pyproject.toml` (somente as três alterações do ACH-MV-F1-005, opção A). Lista exata no Prompt F2 §7.
+9. **Testes:** CT-F2-01 a CT-F2-20 (CT-F2-20 é obrigatório desde a aprovação de DEC-MV-08).
+   - **Regressões:** CT-F1-17 a CT-F1-19 (agora com revisão) e CT-F1-02 (importação dos modelos sem efeitos).
+10. **Comandos:** literais no Prompt F2 §13, com saída integral preservada em arquivo de log. Resumo:
     - `uv run pytest tests/esquema -q`;
-    - `uv run pytest tests/infra/test_alembic_ambiente.py -q`;
-    - verificação Ruff e Pyright;
-    - `uv run alembic heads` (1 head).
+    - `uv run pytest tests/infra/test_alembic_ambiente.py tests/infra/test_configuracao.py::test_importacao_sem_efeitos -q`;
+    - verificação Ruff e Pyright, agora incluindo `alembic/`;
+    - `uv run alembic heads` (1 head: `0001`);
+    - `docker compose --env-file /dev/null config --quiet`, com variáveis fictícias (lição da F1, ACH-MV-F1-007).
 11. **Aceite:** introspecção literal das 134 colunas; todas as constraints com controles positivo e negativo (inclusive `NULL`); 30 seeds; `check` limpo.
     - **Reprovação:** comparar o metadata consigo mesmo; ausência de casos `NULL`; nome > 63 caracteres; FK com CASCADE.
-12. **Auditoria:** conferência campo a campo com o contrato; SQL gerado (`alembic upgrade --sql` opcional, para revisão); seeds sem importar modelos vivos.
+12. **Auditoria:** conferência campo a campo com o contrato; SQL gerado em modo offline somente pela API do Alembic (`command.upgrade(cfg, "head", sql=True)`), com `config.attributes["url_banco"]` fictícia, `configurar_logging=False` e saída capturada fora do repositório; nunca `alembic upgrade --sql` pela CLI, que carregaria as configurações reais; seeds sem importar modelos vivos.
 13. **Rollback:** `downgrade base` somente em banco descartável. No desenvolvimento, sem dados.
 14. **Parada:** auditoria. A F3 exige DEC-MV-09 a 13.
 

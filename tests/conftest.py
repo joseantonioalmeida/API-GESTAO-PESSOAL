@@ -14,9 +14,11 @@ from pydantic_settings import (
 )
 from testcontainers.community.postgres import PostgresContainer
 
+from alembic import command
 from api_gestao_pessoal.settings import Settings
 
 from .apoio.banco import NOME_BANCO_TESTE, garantir_banco_descartavel
+from .apoio.migracoes import config_alembic
 
 IMAGEM_POSTGRES = "postgres:15-alpine"
 
@@ -42,6 +44,16 @@ def url_banco_teste(container_postgres: PostgresContainer) -> str:
     url = container_postgres.get_connection_url()
     garantir_banco_descartavel(url, container_postgres)
     return url
+
+
+@pytest.fixture(scope="session")
+def banco_migrado(
+    container_postgres: PostgresContainer, url_banco_teste: str
+) -> str:
+    """Aplica `upgrade head` uma vez por sessão e devolve a URL."""
+    garantir_banco_descartavel(url_banco_teste, container_postgres)
+    command.upgrade(config_alembic(url_banco_teste), "head")
+    return url_banco_teste
 
 
 class SettingsTeste(Settings):

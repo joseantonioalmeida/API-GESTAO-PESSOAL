@@ -4,11 +4,11 @@
 | --- | --- |
 | ID | ADR-0002 |
 | Título | Identificadores principais em UUIDv7 gerado pela aplicação |
-| Estado | **PROPOSTO** (aguarda DEC-MV-06) |
-| Data | 2026-10-09 |
+| Estado | **ACEITO** em 2026-10-13 (DEC-MV-06, `docs/arquitetura/indice.md` §4). `CLAUDE.md` atualizado na mesma data (§7) |
+| Data | 2026-10-09. Atualizado em 2026-10-13 (aceite e atualização do `CLAUDE.md`) |
 | Autor | Claude Opus 5.5 |
 | Fontes | `CLAUDE.md`: contrato de tabelas (linhas 764–1152) e seção “MAPEAMENTO PARA SQLALCHEMY”. Diretriz atual do usuário (“UUID para identificadores principais”). `analise_projeto_minhavida.md` REC-MV-001 |
-| Substitui (após aceito) | Cláusulas de `CLAUDE.md` que definem `id` como `INT` com auto incremento e as FKs correspondentes como `INT`. Diff em `analise_projeto_minhavida.md` §10.1 |
+| Substitui | Cláusulas de `CLAUDE.md` que definem `id` como `INT` com auto incremento e as FKs correspondentes como `INT`. Diff em `analise_projeto_minhavida.md` §10.1 |
 
 ## 1. Contexto e problema
 
@@ -138,9 +138,9 @@ Contagem: 13 PKs + 19 FKs = 32 colunas. As **134 colunas permanecem** (nenhuma c
 
 ## 7. Atualização da referência normativa
 
-1. Com a aprovação (DEC-MV-06), o usuário aplica o diff de `analise_projeto_minhavida.md` §10.1 ao `CLAUDE.md`, ou autoriza explicitamente o Opus a aplicá-lo.
-2. Este ADR passa a ACEITO e o índice (`docs/arquitetura/indice.md`) registra a aprovação.
-3. **Gate de entrada da F2:** `CLAUDE.md` já atualizado. Assim não há duas fontes contraditórias vigentes durante a implementação.
+1. Com a aprovação (DEC-MV-06), o usuário aplica o diff de `analise_projeto_minhavida.md` §10.1 ao `CLAUDE.md`, ou autoriza explicitamente o Opus a aplicá-lo. **Feito em 2026-10-13:** o Opus aplicou o diff com autorização expressa do usuário (`indice.md` §4, M10): 13 PKs e 19 FKs como UUID, linha de mapeamento e SGBD PostgreSQL.
+2. Este ADR passa a ACEITO e o índice (`docs/arquitetura/indice.md`) registra a aprovação. **Feito em 2026-10-13.**
+3. **Gate de entrada da F2:** `CLAUDE.md` já atualizado. Assim não há duas fontes contraditórias vigentes durante a implementação. **Cumprido em 2026-10-13.**
 4. O prompt anterior de banco (INT) permanece SUSPENSO e não é usado.
 
 ## 8. Consequências
@@ -166,4 +166,4 @@ Contagem: 13 PKs + 19 FKs = 32 colunas. As **134 colunas permanecem** (nenhuma c
 
 ## 10. Aprovação
 
-Necessária: DEC-MV-06. **Este ADR não está aceito.**
+**ACEITO em 2026-10-13** pelo usuário (DEC-MV-06), incluindo a reconciliação das 13 chaves primárias e das 19 chaves estrangeiras. Registro em `docs/arquitetura/indice.md` §4. A implementação é da F2 e depende do “pode implementar” do usuário após a Etapa A.

@@ -3,6 +3,8 @@
 import asyncio
 import time
 
+import psycopg
+from psycopg import sql
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -11,6 +13,19 @@ from testcontainers.community.postgres import PostgresContainer
 NOME_BANCO_TESTE = "minhavida_teste"
 PORTA_POSTGRES = 5432
 INTERVALO_POLLING_S = 0.02
+
+TABELAS_DOMINIO = (
+    "notificacao",
+    "lembrete_importancia",
+    "movimentacao_financeira",
+    "importancia",
+    "serie_importancia",
+    "atividade",
+    "serie_atividade",
+    "recuperacao_senha",
+    "requisicao_idempotente",
+    "usuario",
+)
 
 
 def garantir_banco_descartavel(url: str, container: PostgresContainer) -> None:
@@ -30,6 +45,20 @@ def garantir_banco_descartavel(url: str, container: PostgresContainer) -> None:
 def url_libpq(url: str) -> str:
     """Converte a URL do SQLAlchemy para o formato aceito pelo libpq."""
     return url.replace("postgresql+psycopg://", "postgresql://", 1)
+
+
+def limpar_dados(url: str, container: PostgresContainer) -> None:
+    """Esvazia as tabelas de domínio; preserva catálogos e alembic_version.
+
+    Sem RESTART IDENTITY (não há identidades) e sem CASCADE: uma lista
+    incompleta falha, em vez de apagar outra tabela (REC-MV-034).
+    """
+    garantir_banco_descartavel(url, container)
+    instrucao = sql.SQL("TRUNCATE {}").format(
+        sql.SQL(", ").join(sql.Identifier(t) for t in TABELAS_DOMINIO)
+    )
+    with psycopg.connect(url_libpq(url), autocommit=True) as conexao:
+        conexao.execute(instrucao)
 
 
 async def aguardar_bloqueio(

@@ -3,8 +3,8 @@
 | Campo | Valor |
 | --- | --- |
 | Fase | F1 — Fundação técnica (`docs/arquitetura/plano_fases_api.md`) |
-| Estado | **Executado.** F1 **`APROVADO_COM_P3`** na reauditoria de 2026-10-11 (`docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`), aguardando integração pelo usuário (G6). Não reenviar ao Sonnet. Histórico: `PRONTO_PARA_ETAPA_A` em 2026-10-11 |
-| Data | 2026-10-10. Atualizado em 2026-10-11 e em 2026-10-13 (P-DOC-06 e 07, aprovadas pelo usuário) |
+| Estado | **Executado.** F1 **`APROVADO_COM_P3`** na reauditoria de 2026-10-11 (`docs/auditorias/REAUDITORIA_F1_CORRECOES_POS_AUDITORIA.md`) e integrada no commit `90412ec4b9ecb6594e0b9e571c1dbba0bb1a4a30` (G6 cumprido em 2026-10-13). Não reenviar ao Sonnet. Histórico: `PRONTO_PARA_ETAPA_A` em 2026-10-11 |
+| Data | 2026-10-10. Atualizado em 2026-10-11 e em 2026-10-13 (P-DOC-06 e 07, aprovadas pelo usuário; registro do G6) |
 | Autor | Claude Opus 5.5 (arquitetura) |
 | Destinatário | Claude Sonnet 5 (implementação) |
 
